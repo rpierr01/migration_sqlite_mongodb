@@ -128,3 +128,15 @@
 1. **Cloner le dépôt** :
    ```bash
    git clone https://github.com/votre-utilisateur/paris2055.git
+
+2. **Utiliser DB Browser for SQLite pour visualiser la base SQL** :
+   ```bash
+   https://sqlitebrowser.org/dl/
+
+3. **Penser à push le code uniquement sur la branch develop** :
+   ```bash
+   git checkout -b develop origin/develop
+   git pull origin develop
+   git add .
+   git commit -m "commenter la modif"
+   git push origin develop
