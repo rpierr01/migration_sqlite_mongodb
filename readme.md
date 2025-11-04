@@ -135,8 +135,9 @@
 
 3. **Penser à push le code uniquement sur la branch develop** :
    ```bash
-   git checkout -b develop origin/develop
+   git checkout -b develop
    git pull origin develop
    git add .
    git commit -m "commenter la modif"
    git push origin develop
+   
