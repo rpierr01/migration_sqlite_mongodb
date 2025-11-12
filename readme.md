@@ -135,10 +135,10 @@
 
 3. **Penser à push le code uniquement sur la branch develop** :
    ```bash
-   git checkout develop
+   git checkout develop (passer sur la branch develop)
    git checkout -b develop origin/develop (Si Git te dit que la branche n’existe pas localement, tu peux la créer à partir de celle du dépôt distant)
-   git pull origin develop
+   git pull origin develop (récupérer le code de la branch develop sur le repo)
    git add .
    git commit -m "commenter la modif"
-   git push origin develop
+   git push origin develop 
    
