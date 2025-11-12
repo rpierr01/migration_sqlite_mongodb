@@ -16,6 +16,7 @@ Nouveauté :
 import sqlite3
 import pandas as pd
 from pymongo import MongoClient
+from tqdm import tqdm
 
 # --- CONFIGURATION ---
 SQLITE_PATH = "../data/Paris2055.sqlite"
@@ -62,13 +63,13 @@ total_mesures = 0
 total_vehicules = 0
 total_incidents = 0
 
-for _, ligne in tables["lignes"].iterrows():
+for _, ligne in tqdm(tables["lignes"].iterrows(), desc="Traitement des lignes", total=len(tables["lignes"])):
     id_ligne = ligne["id_ligne"]
 
     # --- Arrets de la ligne ---
     df_arrets = tables["arrets"][tables["arrets"]["id_ligne"] == id_ligne]
     arrets_docs = []
-    for _, arret in df_arrets.iterrows():
+    for _, arret in tqdm(df_arrets.iterrows(), desc=f"Traitement des arrêts (Ligne {id_ligne})", total=len(df_arrets), leave=False):
         id_arret = arret["id_arret"]
 
         # Quartiers associés
@@ -79,7 +80,7 @@ for _, ligne in tables["lignes"].iterrows():
         # Capteurs et mesures
         df_capteurs = tables["capteurs"][tables["capteurs"]["id_arret"] == id_arret]
         capteurs_docs = []
-        for _, capteur in df_capteurs.iterrows():
+        for _, capteur in tqdm(df_capteurs.iterrows(), desc=f"Traitement des capteurs (Arrêt {id_arret})", total=len(df_capteurs), leave=False):
             id_capteur = capteur["id_capteur"]
             mesures = tables["mesures"][tables["mesures"]["id_capteur"] == id_capteur]
             mesures_docs = mesures[["horodatage", "valeur", "unite"]].to_dict(orient="records")
@@ -110,7 +111,7 @@ for _, ligne in tables["lignes"].iterrows():
     # --- Véhicules ---
     df_vehicules = tables["vehicules"][tables["vehicules"]["id_ligne"] == id_ligne]
     vehicules_docs = []
-    for _, vehicule in df_vehicules.iterrows():
+    for _, vehicule in tqdm(df_vehicules.iterrows(), desc=f"Traitement des véhicules (Ligne {id_ligne})", total=len(df_vehicules), leave=False):
         chauffeur = tables["chauffeurs"][tables["chauffeurs"]["id_chauffeur"] == vehicule["id_chauffeur"]]
         chauffeur_doc = None
         if not chauffeur.empty:
@@ -131,7 +132,7 @@ for _, ligne in tables["lignes"].iterrows():
     # --- Trafic ---
     df_trafic = tables["trafics"][tables["trafics"]["id_ligne"] == id_ligne]
     trafic_docs = []
-    for _, trafic in df_trafic.iterrows():
+    for _, trafic in tqdm(df_trafic.iterrows(), desc=f"Traitement du trafic (Ligne {id_ligne})", total=len(df_trafic), leave=False):
         id_trafic = trafic["id_trafic"]
         incidents = tables["incidents"][tables["incidents"]["id_trafic"] == id_trafic]
         incidents_docs = incidents[["description", "gravite", "horodatage"]].to_dict(orient="records")
@@ -161,7 +162,9 @@ for _, ligne in tables["lignes"].iterrows():
 
 # --- INSERTION ---
 if documents_lignes:
-    db.Lignes.insert_many(documents_lignes)
+    print("📤 Insertion des documents dans MongoDB...")
+    for doc in tqdm(documents_lignes, desc="Migration des lignes"):
+        db.Lignes.insert_one(doc)
     print(f"✅ {len(documents_lignes)} lignes migrées vers MongoDB !")
 else:
     print("⚠️ Aucune ligne trouvée à migrer.")
