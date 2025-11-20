@@ -1,0 +1,5 @@
+# Ignorer les fichiers .DS_Store
+.DS_Store
+
+# Ignorer les dossier de venv
+venv/
