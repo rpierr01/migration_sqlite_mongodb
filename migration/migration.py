@@ -17,7 +17,7 @@ from pymongo import MongoClient, GEOSPHERE
 from tqdm import tqdm
 
 # --- CONFIGURATION ---
-SQLITE_PATH = "../data/Paris2055.sqlite"
+SQLITE_PATH = "data/Paris2055.sqlite"
 MONGO_URI = "mongodb://localhost:27017/"
 MONGO_DB_NAME = "Paris2055"
 

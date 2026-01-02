@@ -2,7 +2,7 @@ import sqlite3
 import pandas as pd
 
 # --- Connexion à la base SQLite ---
-db_path = "../data/Paris2055.sqlite"
+db_path = "data/Paris2055.sqlite"
 conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 
