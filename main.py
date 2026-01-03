@@ -97,4 +97,4 @@ def update_output(btn_migration_clicks, btn_queries_clicks, _):
 
 # Run the Dash app
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
