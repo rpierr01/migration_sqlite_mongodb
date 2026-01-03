@@ -15,6 +15,7 @@ import sqlite3
 import pandas as pd
 from pymongo import MongoClient, GEOSPHERE
 from tqdm import tqdm
+import sys
 
 # --- CONFIGURATION ---
 SQLITE_PATH = "data/Paris2055.sqlite"
@@ -113,7 +114,8 @@ if docs_lignes:
 print("🚏 Migration ARRETS (avec GeoJSON)...")
 docs_arrets = []
 
-for _, arret in tqdm(arrets.iterrows(), total=len(arrets)):
+# Disable tqdm progress bars
+for _, arret in tqdm(arrets.iterrows(), total=len(arrets), disable=True):
     id_arret = arret["id_arret"]
     
     # 1. Récupération optimisée des Quartiers
@@ -249,7 +251,7 @@ print(f"🚐 Véhicules   : {total_stats['vehicules']}")
 print(f"⚠️  Trafic      : {total_stats['trafic']}")
 print(f"📈 Mesures     : {total_stats['mesures']} (imbriquées)")
 print(f"🚨 Incidents   : {total_stats['incidents']} (imbriqués)")
-print("="*60)
-
+conn.close()
+client.close()
 conn.close()
 client.close()

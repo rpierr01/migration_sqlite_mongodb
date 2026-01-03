@@ -5,6 +5,7 @@ Created on Thu Nov 27 14:13:16 2025
 @author: rfaucher
 """
 
+print("Début des requêtes SQL sur SQLite...")
 
 import sqlite3
 import pandas as pd
@@ -272,6 +273,4 @@ pd.DataFrame(result_n, columns=["nom_ligne", "classification_retard"]).to_csv(
     os.path.join(EXPORT_DIR, "requete_n.csv"), index=False
 )
 
-
-
-
+print("Fin des requêtes SQL sur SQLite.")

@@ -2,6 +2,7 @@ import dash
 from dash import html, dcc, Output, Input
 import subprocess
 import threading
+import re
 
 # Initialize Dash app
 app = dash.Dash(__name__, external_stylesheets=["https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css"])
@@ -22,7 +23,9 @@ def run_script(script_path):
         for line in process.stdout:
             terminal_output.append(line)
         for line in process.stderr:
-            terminal_output.append(f"ERROR: {line}")
+            # Filter out tqdm progress bars or other non-critical messages
+            if not re.match(r"^\s*\d+%|^\s*\|", line):  # Example filter for tqdm
+                terminal_output.append(f"ERROR: {line}")
         process.wait()
         terminal_output.append(f"\nFinished running {script_path}\n")
 
