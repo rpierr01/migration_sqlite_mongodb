@@ -18,7 +18,7 @@ SQLITE_PATH = "data/Paris2055.sqlite"
 #MONGO_URI = "mongodb://localhost:27017/"
 #MONGO_DB_NAME = "Paris2055"
 
-EXPORT_DIR = "resultat_requetes_sql"
+EXPORT_DIR = "requetes_sql/resultat_requetes_sql"
 os.makedirs(EXPORT_DIR, exist_ok=True)
 
 #
@@ -41,31 +41,44 @@ pd.DataFrame(result_a, columns=["nom_ligne", "avg_retard_minutes"]).to_csv(
     os.path.join(EXPORT_DIR, "requete_a.csv"), index=False
 )
 
-#%%b
+#%%b - Nombre moyen de passagers transportés par jour et par ligne 
+
+# Modifié -> La modification remplace l'extraction de 6 caractères par la fonction DATE(), car SUBSTR(..., 1, 6) regroupait 
+# les données par tranches de mois incohérentes (ex: "2053-0") alors que l'énoncé exige une moyenne calculée 
+# par journée calendrier complète.
+
 curseur.execute("""
-    SELECT nom_ligne,
-           SUBSTR(heure_prevue, 1, 6),
-           AVG(passagers_estimes)
+    SELECT 
+        nom_ligne,
+        DATE(heure_prevue) AS jour,
+        AVG(passagers_estimes) AS avg_passagers_estimes
     FROM Horaire
     LEFT JOIN Arret ON Horaire.id_arret = Arret.id_arret
     LEFT JOIN Ligne ON Arret.id_ligne = Ligne.id_ligne
-    GROUP BY Ligne.id_ligne, SUBSTR(heure_prevue, 1, 6)
+    GROUP BY Ligne.id_ligne, jour
+    ORDER BY nom_ligne, jour
 """)
 result_b = curseur.fetchall()
-pd.DataFrame(result_b, columns=["nom_ligne", "heure_prevue", "avg_passagers_estimes"]).to_csv(
+
+pd.DataFrame(result_b, columns=["nom_ligne", "jour", "avg_passagers_estimes"]).to_csv(
     os.path.join(EXPORT_DIR, "requete_b.csv"), index=False
 )
 
 #%%c
+
+# Modifié -> J'ai transformé le comptage en taux pour mieux refléter l'énoncé qui demande le "taux d'incidents par ligne".
+
 curseur.execute("""
-    SELECT nom_ligne, COUNT(id_incident)
-    FROM Incident
-    LEFT JOIN Trafic ON Incident.id_trafic = Trafic.id_trafic
-    LEFT JOIN Ligne ON Trafic.id_ligne = Ligne.id_ligne
+    SELECT 
+        nom_ligne, 
+        CAST(COUNT(id_incident) AS FLOAT) / COUNT(Trafic.id_trafic) AS taux_incident
+    FROM Ligne
+    LEFT JOIN Trafic ON Ligne.id_ligne = Trafic.id_ligne
+    LEFT JOIN Incident ON Trafic.id_trafic = Incident.id_trafic
     GROUP BY Ligne.id_ligne
 """)
 result_c = curseur.fetchall()
-pd.DataFrame(result_c, columns=["nom_ligne", "incident_count"]).to_csv(
+pd.DataFrame(result_c, columns=["nom_ligne", "incident_taux"]).to_csv(
     os.path.join(EXPORT_DIR, "requete_c.csv"), index=False
 )
 
@@ -103,13 +116,17 @@ pd.DataFrame(result_e, columns=["quartier_nom", "avg_valeur"]).to_csv(
     os.path.join(EXPORT_DIR, "requete_e.csv"), index=False
 )
 
-#%%f
+#%%f - Liste des lignes sans incident mais avec retards > 10 min
+
+# Modifié -> Ajout de DISTINCT pour éviter les doublons dans le résultat.
+
 curseur.execute("""
-    SELECT nom_ligne
+    SELECT DISTINCT nom_ligne
     FROM Ligne
     LEFT JOIN Trafic ON Ligne.id_ligne = Trafic.id_ligne
     LEFT JOIN Incident ON Trafic.id_trafic = Incident.id_trafic
     WHERE retard_minutes > 10 AND id_incident IS NULL
+    ORDER BY nom_ligne
 """)
 result_f = curseur.fetchall()
 pd.DataFrame(result_f, columns=["nom_ligne"]).to_csv(
@@ -138,21 +155,26 @@ pd.DataFrame(result_h, columns=["quartier_nom", "arret_count"]).to_csv(
     os.path.join(EXPORT_DIR, "requete_h.csv"), index=False
 )
 
-#%%i pas sur de moi
+#%%i - Corrélation entre trafic et pollution (CO2 quand retard augmente) par ligne
 curseur.execute("""
-    SELECT nom_ligne,
-           (SUM(valeur * retard_minutes) - (SUM(valeur) * SUM(retard_minutes)) / COUNT(*)) /
-           SQRT((SUM(valeur * valeur) - (SUM(valeur) * SUM(valeur)) / COUNT(*)) *
-                (SUM(retard_minutes * retard_minutes) - (SUM(retard_minutes) * SUM(retard_minutes)) / COUNT(*)))
+    SELECT 
+        Ligne.nom_ligne,
+        (SUM(Mesure.valeur * Trafic.retard_minutes) - (SUM(Mesure.valeur) * SUM(Trafic.retard_minutes)) / COUNT(*)) /
+        SQRT(
+            (SUM(Mesure.valeur * Mesure.valeur) - (SUM(Mesure.valeur) * SUM(Mesure.valeur)) / COUNT(*)) *
+            (SUM(Trafic.retard_minutes * Trafic.retard_minutes) - (SUM(Trafic.retard_minutes) * SUM(Trafic.retard_minutes)) / COUNT(*))
+        ) AS correlation
     FROM Mesure
-    LEFT JOIN Capteur ON Mesure.id_capteur = Capteur.id_capteur
-    LEFT JOIN Arret ON Capteur.id_arret = Arret.id_arret
-    LEFT JOIN Ligne ON Arret.id_ligne = Ligne.id_ligne
-    LEFT JOIN Trafic ON Ligne.id_ligne = Trafic.id_ligne
-    WHERE type_capteur = 'CO2'
+    JOIN Capteur ON Mesure.id_capteur = Capteur.id_capteur
+    JOIN Arret ON Capteur.id_arret = Arret.id_arret
+    JOIN Ligne ON Arret.id_ligne = Ligne.id_ligne
+    JOIN Trafic ON Ligne.id_ligne = Trafic.id_ligne 
+        AND DATE(Mesure.horodatage) = DATE(Trafic.horodatage)
+    WHERE Capteur.type_capteur = 'CO2'
     GROUP BY Ligne.id_ligne
 """)
 result_i = curseur.fetchall()
+
 pd.DataFrame(result_i, columns=["nom_ligne", "correlation"]).to_csv(
     os.path.join(EXPORT_DIR, "requete_i.csv"), index=False
 )
@@ -186,30 +208,50 @@ pd.DataFrame(result_k, columns=["chauffeur_nom", "avg_retard_minutes"]).to_csv(
     os.path.join(EXPORT_DIR, "requete_k.csv"), index=False
 )
 
-#%%l
+#%%l - % de véhicules électriques par ligne de bus
+
+# modif -> La requête a été modifiée pour passer d'un taux global à un détail par ligne de transport 
+# en ajoutant un regroupement par ligne et un filtre spécifique sur le type de véhicule "Bus".
+
 curseur.execute("""
-    SELECT (COUNT(CASE WHEN type_vehicule = 'Electrique' THEN 1 END) * 1.0 / COUNT(*)) AS taux_sans_retard
+    SELECT 
+        Ligne.nom_ligne,
+        (COUNT(CASE WHEN Vehicule.type_vehicule = 'Electrique' THEN 1 END) * 1.0 / COUNT(*)) AS taux_electrique
     FROM Vehicule
+    JOIN Ligne ON Vehicule.id_ligne = Ligne.id_ligne
+    WHERE Ligne.type = 'Bus'
+    GROUP BY Ligne.id_ligne
+    ORDER BY nom_ligne
 """)
 result_l = curseur.fetchall()
-pd.DataFrame(result_l, columns=["taux_sans_retard"]).to_csv(
+
+pd.DataFrame(result_l, columns=["nom_ligne", "taux_electrique"]).to_csv(
     os.path.join(EXPORT_DIR, "requete_l.csv"), index=False
 )
 
-#%%m 
+#%%m - Classification du niveau de pollution par capteur avec sa localisation
+
+# La sélection a été enrichie avec l'identifiant du capteur et ses coordonnées GPS (latitude et longitude) 
+# afin de rendre les données de pollution exploitables pour une visualisation géographique.
+
 curseur.execute("""
-    SELECT valeur,
-           CASE
-               WHEN valeur < 400 THEN 'faible'
-               WHEN valeur < 500 THEN 'moyen'
-               ELSE 'élevé'
-           END AS niveau_pollution
+    SELECT 
+        Capteur.id_capteur,
+        Capteur.latitude,
+        Capteur.longitude,
+        Mesure.valeur,
+        CASE
+            WHEN Mesure.valeur < 400 THEN 'faible'
+            WHEN Mesure.valeur < 500 THEN 'moyen'
+            ELSE 'élevé'
+        END AS niveau_pollution
     FROM Mesure
-    LEFT JOIN Capteur ON Mesure.id_capteur = Capteur.id_capteur
-    WHERE type_capteur = 'CO2'
+    JOIN Capteur ON Mesure.id_capteur = Capteur.id_capteur
+    WHERE Capteur.type_capteur = 'CO2'
 """)
 result_m = curseur.fetchall()
-pd.DataFrame(result_m, columns=["valeur", "niveau_pollution"]).to_csv(
+
+pd.DataFrame(result_m, columns=["id_capteur", "latitude", "longitude", "valeur", "niveau_pollution"]).to_csv(
     os.path.join(EXPORT_DIR, "requete_m.csv"), index=False
 )
 
