@@ -1,0 +1,72 @@
+/* General body styling */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 0;
+}
+
+/* Header styling */
+h1 {
+    color: #2c3e50;
+    font-size: 2.5em;
+    margin-bottom: 20px;
+}
+
+h2, h3 {
+    color: #34495e;
+}
+
+/* Tabs styling */
+.tab {
+    background-color: #ecf0f1;
+    border: 1px solid #bdc3c7;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 10px;
+}
+
+.tab:hover {
+    background-color: #dfe6e9;
+}
+
+/* Graph container styling */
+.graph-container {
+    margin: 20px;
+    padding: 20px;
+    background-color: #ffffff;
+    border: 1px solid #dcdde1;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* DataTable styling */
+.dash-table-container {
+    margin: 20px;
+    padding: 10px;
+    background-color: #ffffff;
+    border: 1px solid #dcdde1;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Iframe styling for Folium map */
+iframe {
+    border: 2px solid #34495e;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Button styling */
+button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #2980b9;
+}

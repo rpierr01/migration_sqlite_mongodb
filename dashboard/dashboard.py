@@ -142,7 +142,7 @@ fig_h_quartiers = px.treemap(df_h, path=['quartier_nom'], values='arret_count')
 fig_i_corr = px.bar(df_i.sort_values("correlation"), x="id_ligne", y="correlation")
 
 # --- LAYOUT DASH ---
-app = dash.Dash(__name__)
+app = dash.Dash(__name__, assets_folder="assets")  # Specify the assets folder for CSS
 
 # On génère l'HTML de la carte une seule fois au lancement
 map_html = create_combined_map()
