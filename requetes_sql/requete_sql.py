@@ -101,19 +101,43 @@ pd.DataFrame(result_d, columns=["immatriculation", "type_vehicule", "avg_valeur"
 
 #%%e
 curseur.execute("""
-    SELECT Quartier.nom, AVG(valeur)
-    FROM Mesure
-    LEFT JOIN Capteur ON Mesure.id_capteur = Capteur.id_capteur
-    LEFT JOIN Arret ON Capteur.id_arret = Arret.id_arret
-    LEFT JOIN ArretQuartier ON Arret.id_arret = ArretQuartier.id_arret
-    LEFT JOIN Quartier ON ArretQuartier.id_quartier = Quartier.id_quartier
-    WHERE type_capteur = 'Bruit'
-    GROUP BY Quartier.id_quartier
-    ORDER BY AVG(valeur) DESC
-    LIMIT 5
+    WITH bruit_par_quartier AS (
+        SELECT Quartier.nom AS quartier_nom, AVG(valeur) AS avg_valeur
+        FROM Mesure
+        LEFT JOIN Capteur ON Mesure.id_capteur = Capteur.id_capteur
+        LEFT JOIN Arret ON Capteur.id_arret = Arret.id_arret
+        LEFT JOIN ArretQuartier ON Arret.id_arret = ArretQuartier.id_arret
+        LEFT JOIN Quartier ON ArretQuartier.id_quartier = Quartier.id_quartier
+        WHERE type_capteur = 'Bruit'
+        GROUP BY Quartier.id_quartier
+    ),
+    top5 AS (
+        SELECT quartier_nom, avg_valeur
+        FROM (
+            SELECT quartier_nom, avg_valeur, ROW_NUMBER() OVER (ORDER BY avg_valeur DESC) AS rn
+            FROM bruit_par_quartier
+        )
+        WHERE rn <= 5
+    ),
+    bottom5 AS (
+        SELECT quartier_nom, avg_valeur
+        FROM (
+            SELECT quartier_nom, avg_valeur, ROW_NUMBER() OVER (ORDER BY avg_valeur ASC) AS rn
+            FROM bruit_par_quartier
+        )
+        WHERE rn <= 5
+    ),
+    top_bottom AS (
+        SELECT 'top5' AS segment, quartier_nom, avg_valeur FROM top5
+        UNION ALL
+        SELECT 'bottom5', quartier_nom, avg_valeur FROM bottom5
+    )
+    SELECT segment, quartier_nom, avg_valeur FROM top_bottom
 """)
-result_e = curseur.fetchall()
-pd.DataFrame(result_e, columns=["quartier_nom", "avg_valeur"]).to_csv(
+df_e_all = pd.DataFrame(curseur.fetchall(), columns=["segment", "quartier_nom", "avg_valeur"])
+
+# Export top and bottom 5 together in a single CSV
+df_e_all.to_csv(
     os.path.join(EXPORT_DIR, "requete_e.csv"), index=False
 )
 
