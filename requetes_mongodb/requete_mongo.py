@@ -1,7 +1,6 @@
 import pandas as pd
 from pymongo import MongoClient
 import os
-from datetime import datetime
 
 # Configuration
 MONGO_URI = "mongodb://localhost:27017/"
@@ -19,31 +18,38 @@ def export_to_csv(cursor, filename, columns):
     """
     df = pd.DataFrame(list(cursor))
     if not df.empty:
-        df = df[columns]  # Ensure consistent column order
+        # Reorder columns to match list provided
+        # Handle cases where some keys might be missing in documents using reindex
+        df = df.reindex(columns=columns)
+    else:
+        # Create empty DF with columns if no data
+        df = pd.DataFrame(columns=columns)
+        
     df.to_csv(os.path.join(EXPORT_DIR, filename), index=False)
     print(f"✅ Exporté : {filename}")
 
 # --- REQUÊTES ---
 
 # a. Moyenne des retards par ligne
-# On utilise la collection Trafic car id_ligne y est présent.
+# Tri : Alphabétique par nom_ligne
 res_a = db.Trafic.aggregate([
     {"$group": {"_id": "$id_ligne", "avg_retard": {"$avg": "$retard_minutes"}}},
     {"$lookup": {"from": "Lignes", "localField": "_id", "foreignField": "id_ligne", "as": "ligne_info"}},
     {"$unwind": "$ligne_info"},
-    {"$project": {"nom_ligne": "$ligne_info.nom_ligne", "avg_retard": 1}}
+    {"$project": {"nom_ligne": "$ligne_info.nom_ligne", "avg_retard": 1}},
+    {"$sort": {"nom_ligne": 1}}
 ])
 export_to_csv(res_a, "mongo_requete_a.csv", ["nom_ligne", "avg_retard"])
 
 # b. Nombre moyen de passagers par jour et par ligne
-# Note: Dans votre migration, 'heure_prevue' est un objet datetime dans la collection 'Arrets.horaires'
+# Tri : Alphabétique par nom_ligne, puis par jour
 res_b = db.Arrets.aggregate([
     {"$unwind": "$horaires"},
     {"$addFields": {
         "horaires.heure_prevue": {
             "$dateFromString": {
                 "dateString": "$horaires.heure_prevue",
-                "onError": None,  # Handle invalid date strings gracefully
+                "onError": None,
                 "onNull": None
             }
         }
@@ -57,24 +63,26 @@ res_b = db.Arrets.aggregate([
     }},
     {"$lookup": {"from": "Lignes", "localField": "_id.id_ligne", "foreignField": "id_ligne", "as": "l"}},
     {"$unwind": "$l"},
-    {"$project": {"nom_ligne": "$l.nom_ligne", "jour": "$_id.jour", "avg_passagers": 1}}
+    {"$project": {"nom_ligne": "$l.nom_ligne", "jour": "$_id.jour", "avg_passagers": 1}},
+    {"$sort": {"nom_ligne": 1, "jour": 1}}
 ])
 export_to_csv(res_b, "mongo_requete_b.csv", ["nom_ligne", "jour", "avg_passagers"])
 
-# c. Taux d'incidents par ligne (Ratio Incidents / Trafic total)
+# c. Taux d'incidents par ligne
+# Pas de changement majeur de logique nécessaire ici, le SQL a été adapté à Mongo.
+# On s'assure juste du tri.
 res_c = db.Trafic.aggregate([
     {"$group": {
         "_id": "$id_ligne",
         "total_releves": {"$sum": 1},
-        "total_incidents": {"$sum": {"$size": "$incidents"}}
+        "total_incidents": {"$sum": {"$size": {"$ifNull": ["$incidents", []]}}} # Sécurité si null
     }},
     {"$project": {
-        "id_ligne": "$_id",
         "incident_taux": {"$divide": ["$total_incidents", "$total_releves"]}
     }},
     {"$lookup": {
         "from": "Lignes", 
-        "localField": "id_ligne", 
+        "localField": "_id", 
         "foreignField": "id_ligne", 
         "as": "l"
     }},
@@ -88,6 +96,7 @@ res_c = db.Trafic.aggregate([
 export_to_csv(res_c, "mongo_requete_c.csv", ["nom_ligne", "incident_taux"])
 
 # d. Emissions moyennes de CO2 par véhicule
+# Tri : Par immatriculation
 res_d = db.Vehicules.aggregate([
     {"$lookup": {
         "from": "Arrets",
@@ -104,60 +113,34 @@ res_d = db.Vehicules.aggregate([
         "immatriculation": {"$first": "$immatriculation"},
         "type_vehicule": {"$first": "$type_vehicule"},
         "avg_co2": {"$avg": "$arrets_ligne.capteurs.mesures.valeur"}
-    }}
+    }},
+    {"$sort": {"immatriculation": 1}}
 ])
 export_to_csv(res_d, "mongo_requete_d.csv", ["immatriculation", "type_vehicule", "avg_co2"])
 
 # e. Top 5 des quartiers les plus bruyants
-res_e_complet = db.Arrets.aggregate([
-    # --- ETAPE 1 : Aplatir et Filtrer (Comme les JOINs et le WHERE du SQL) ---
+# Tri : Valeur décroissante, puis nom quartier (pour égalité)
+res_e = db.Arrets.aggregate([
     {"$unwind": "$quartiers"},
     {"$unwind": "$capteurs"},
     {"$match": {"capteurs.type_capteur": "Bruit"}},
     {"$unwind": "$capteurs.mesures"},
-
-    # --- ETAPE 2 : Grouper par quartier (Comme le premier WITH du SQL) ---
-    {"$group": {
-        "_id": "$quartiers.nom",
-        "avg_valeur": {"$avg": "$capteurs.mesures.valeur"}
-    }},
-
-    # --- ETAPE 3 : Traitement Parallèle ($facet remplace les CTEs Top5/Bottom5) ---
-    {"$facet": {
-        "top5": [
-            {"$sort": {"avg_valeur": -1}},      # Tri décroissant (Les plus bruyants)
-            {"$limit": 5},
-            {"$addFields": {"segment": "top5"}} # On ajoute l'étiquette
-        ],
-        "bottom5": [
-            {"$sort": {"avg_valeur": 1}},       # Tri croissant (Les moins bruyants)
-            {"$limit": 5},
-            {"$addFields": {"segment": "bottom5"}}
-        ]
-    }},
-
-    # --- ETAPE 4 : Fusionner les résultats (Comme le UNION ALL) ---
-    {"$project": {
-        "tous_les_resultats": {"$concatArrays": ["$top5", "$bottom5"]}
-    }},
-    {"$unwind": "$tous_les_resultats"},
-    
-    # --- ETAPE 5 : Mise en forme finale pour correspondre aux colonnes SQL ---
-    {"$project": {
-        "segment": "$tous_les_resultats.segment",
-        "quartier_nom": "$tous_les_resultats._id",
-        "avg_valeur": "$tous_les_resultats.avg_valeur"
-    }}
+    {"$group": {"_id": "$quartiers.nom", "avg_bruit": {"$avg": "$capteurs.mesures.valeur"}}},
+    {"$sort": {"avg_bruit": -1, "_id": 1}},
+    {"$limit": 5},
+    {"$project": {"quartier_nom": "$_id", "avg_bruit": 1}}
 ])
+export_to_csv(res_e, "mongo_requete_e.csv", ["quartier_nom", "avg_bruit"])
 
-export_to_csv(res_e_complet, "mongo_requete_e.csv", ["segment", "quartier_nom", "avg_valeur"])
 # f. Liste des lignes sans incident mais avec retards > 10 min
+# Tri : Alphabétique par nom_ligne
 res_f = db.Trafic.aggregate([
     {"$match": {"retard_minutes": {"$gt": 10}, "incidents": {"$size": 0}}},
     {"$lookup": {"from": "Lignes", "localField": "id_ligne", "foreignField": "id_ligne", "as": "l"}},
     {"$unwind": "$l"},
     {"$group": {"_id": "$l.nom_ligne"}},
-    {"$project": {"nom_ligne": "$_id"}}
+    {"$project": {"nom_ligne": "$_id"}},
+    {"$sort": {"nom_ligne": 1}}
 ])
 export_to_csv(res_f, "mongo_requete_f.csv", ["nom_ligne"])
 
@@ -170,14 +153,17 @@ pd.DataFrame([{"taux_sans_retard": taux}]).to_csv(
 )
 
 # h. Nombre d'arrêts par quartier
+# Tri : Nombre arrêts décroissant, puis nom quartier
 res_h = db.Arrets.aggregate([
     {"$unwind": "$quartiers"},
     {"$group": {"_id": "$quartiers.nom", "arret_count": {"$sum": 1}}},
-    {"$project": {"quartier_nom": "$_id", "arret_count": 1}}
+    {"$project": {"quartier_nom": "$_id", "arret_count": 1}},
+    {"$sort": {"arret_count": -1, "quartier_nom": 1}}
 ])
 export_to_csv(res_h, "mongo_requete_h.csv", ["quartier_nom", "arret_count"])
 
 # i. Corrélation (CO2 vs Retard par ligne et jour)
+# On récupère le nom de ligne pour pouvoir trier
 data_i = db.Trafic.aggregate([
     {"$project": {"id_ligne": 1, "retard": "$retard_minutes", "date": {"$dateToString": {"format": "%Y-%m-%d", "date": "$horodatage"}}}},
     {"$lookup": {
@@ -197,19 +183,28 @@ data_i = db.Trafic.aggregate([
         "_id": "$id_ligne",
         "valeurs": {"$push": "$mesures_sync.capteurs.mesures.valeur"},
         "retards": {"$push": "$retard"}
-    }}
+    }},
+    # Récupérer le nom de la ligne pour le tri final
+    {"$lookup": {"from": "Lignes", "localField": "_id", "foreignField": "id_ligne", "as": "l"}},
+    {"$unwind": "$l"}
 ])
+
 # Calcul de corrélation via Pandas
 list_i = []
 for doc in data_i:
     if len(doc['valeurs']) > 1:
         corr = pd.Series(doc['valeurs']).corr(pd.Series(doc['retards']))
-        list_i.append({"id_ligne": doc['_id'], "correlation": corr})
-pd.DataFrame(list_i, columns=["id_ligne", "correlation"]).to_csv(
+        list_i.append({"nom_ligne": doc['l']['nom_ligne'], "correlation": corr})
+
+# Tri : Alphabétique par nom_ligne
+list_i.sort(key=lambda x: x['nom_ligne'])
+
+pd.DataFrame(list_i, columns=["nom_ligne", "correlation"]).to_csv(
     os.path.join(EXPORT_DIR, "mongo_requete_i.csv"), index=False
 )
 
 # j. Moyenne de température par ligne
+# Tri : Alphabétique par nom_ligne
 res_j = db.Arrets.aggregate([
     {"$unwind": "$capteurs"},
     {"$match": {"capteurs.type_capteur": "Temperature"}},
@@ -217,23 +212,33 @@ res_j = db.Arrets.aggregate([
     {"$group": {"_id": "$id_ligne", "avg_temp": {"$avg": "$capteurs.mesures.valeur"}}},
     {"$lookup": {"from": "Lignes", "localField": "_id", "foreignField": "id_ligne", "as": "l"}},
     {"$unwind": "$l"},
-    {"$project": {"nom_ligne": "$l.nom_ligne", "avg_temperature": "$avg_temp"}}
+    {"$project": {"nom_ligne": "$l.nom_ligne", "avg_temperature": "$avg_temp"}},
+    {"$sort": {"nom_ligne": 1}}
 ])
 export_to_csv(res_j, "mongo_requete_j.csv", ["nom_ligne", "avg_temperature"])
 
-# k. Performance chauffeur (retard moyen) - Correction du GroupBy
+# k. Performance chauffeur (retard moyen)
+# Correction : S'assurer que le scope est identique au SQL (Vehicules -> Lignes -> Trafic existant)
 res_k = db.Vehicules.aggregate([
+    # 1. Récupérer le nom du chauffeur
+    {"$project": {
+        "id_ligne": 1,
+        "chauffeur_nom": "$chauffeur.nom",
+        "id_chauffeur": "$chauffeur.id_chauffeur"
+    }},
+    # 2. Joindre le trafic de la ligne correspondante
     {"$lookup": {
         "from": "Trafic",
         "localField": "id_ligne",
         "foreignField": "id_ligne",
         "as": "t"
     }},
+    # 3. Unwind : Cela agit comme un INNER JOIN. Si 't' est vide (pas de trafic), le chauffeur est exclu.
     {"$unwind": "$t"},
+    # 4. Groupement
     {"$group": {
-        # On groupe par l'ID pour ne pas mélanger les homonymes
-        "_id": "$chauffeur.id_chauffeur", 
-        "nom": {"$first": "$chauffeur.nom"},
+        "_id": "$id_chauffeur", 
+        "nom": {"$first": "$chauffeur_nom"},
         "avg_retard": {"$avg": "$t.retard_minutes"}
     }},
     {"$project": {
@@ -245,6 +250,7 @@ res_k = db.Vehicules.aggregate([
 export_to_csv(res_k, "mongo_requete_k.csv", ["chauffeur_nom", "avg_retard_minutes"])
 
 # l. % véhicules électriques par ligne de bus
+# Tri : Alphabétique par nom_ligne
 res_l = db.Lignes.aggregate([
     {"$match": {"type": "Bus"}},
     {"$lookup": {"from": "Vehicules", "localField": "id_ligne", "foreignField": "id_ligne", "as": "v"}},
@@ -260,18 +266,19 @@ res_l = db.Lignes.aggregate([
                 0
             ]
         }
-    }}
+    }},
+    {"$sort": {"nom_ligne": 1}}
 ])
 export_to_csv(res_l, "mongo_requete_l.csv", ["nom_ligne", "taux_electrique"])
 
-# m. Classification pollution avec localisation (Correction Latitude/Longitude)
+# m. Classification pollution avec localisation
+# Tri : Par id_capteur
 res_m = db.Arrets.aggregate([
     {"$unwind": "$capteurs"},
     {"$match": {"capteurs.type_capteur": "CO2"}},
     {"$unwind": "$capteurs.mesures"},
     {"$project": {
         "id_capteur": "$capteurs.id_capteur",
-        # Accès correct aux coordonnées GeoJSON [longitude, latitude]
         "latitude": {"$arrayElemAt": ["$capteurs.location.coordinates", 1]},
         "longitude": {"$arrayElemAt": ["$capteurs.location.coordinates", 0]},
         "valeur": "$capteurs.mesures.valeur",
@@ -284,11 +291,13 @@ res_m = db.Arrets.aggregate([
                 "default": "élevé"
             }
         }
-    }}
+    }},
+    {"$sort": {"id_capteur": 1}}
 ])
 export_to_csv(res_m, "mongo_requete_m.csv", ["id_capteur", "latitude", "longitude", "valeur", "niveau_pollution"])
 
 # n. Classification des lignes par retard moyen
+# Tri : Alphabétique par nom_ligne
 res_n = db.Trafic.aggregate([
     {"$group": {"_id": "$id_ligne", "avg_r": {"$avg": "$retard_minutes"}}},
     {"$lookup": {"from": "Lignes", "localField": "_id", "foreignField": "id_ligne", "as": "l"}},
@@ -299,12 +308,13 @@ res_n = db.Trafic.aggregate([
             "$switch": {
                 "branches": [
                     {"case": {"$eq": ["$avg_r", 0]}, "then": "aucun retard"},
-                    {"case": {"$lt": ["$avg_r", 5]}, "then": "retard moyen < 5min"}
+                    {"case": {"$lt": ["$avg_r", 5]}, "then": "retard moyen inf a 5min"}
                 ],
-                "default": "retard moyen > 5min"
+                "default": "retard moyen sup a 5min"
             }
         }
-    }}
+    }},
+    {"$sort": {"nom_ligne": 1}}
 ])
 export_to_csv(res_n, "mongo_requete_n.csv", ["nom_ligne", "classification_retard"])
 

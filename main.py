@@ -38,8 +38,18 @@ app.layout = html.Div([
             "fontSize": "16px"
         }),
         html.Button("📊 View Results", id="nav-results", n_clicks=0, style={
+            "marginRight": "10px",
             "padding": "10px 20px",
             "backgroundColor": "#17A2B8",
+            "color": "white",
+            "border": "none",
+            "borderRadius": "5px",
+            "cursor": "pointer",
+            "fontSize": "16px"
+        }),
+        html.Button("📈 Dashboard", id="nav-dashboard", n_clicks=0, style={
+            "padding": "10px 20px",
+            "backgroundColor": "#28A745",
             "color": "white",
             "border": "none",
             "borderRadius": "5px",
@@ -161,10 +171,11 @@ results_layout = html.Div([
 @app.callback(
     Output('url', 'pathname'),
     [Input('nav-home', 'n_clicks'),
-     Input('nav-results', 'n_clicks')],
+     Input('nav-results', 'n_clicks'),
+     Input('nav-dashboard', 'n_clicks')],
     prevent_initial_call=True
 )
-def navigate(home_clicks, results_clicks):
+def navigate(home_clicks, results_clicks, dashboard_clicks):
     ctx = dash.callback_context
     if not ctx.triggered:
         return '/'
@@ -175,6 +186,8 @@ def navigate(home_clicks, results_clicks):
         return '/'
     elif button_id == 'nav-results':
         return '/results'
+    elif button_id == 'nav-dashboard':
+        return '/dashboard'
     
     return '/'
 
@@ -185,6 +198,14 @@ def navigate(home_clicks, results_clicks):
 def display_page(pathname):
     if pathname == '/results':
         return results_layout
+    elif pathname == '/dashboard':
+        return html.Div([
+            html.H1("Dashboard", style={"textAlign": "center", "marginBottom": "20px"}),
+            html.Iframe(
+                src="http://127.0.0.1:8051",  # Port du dashboard séparé
+                style={"width": "100%", "height": "800px", "border": "none"}
+            )
+        ])
     else:
         return home_layout
 
@@ -409,4 +430,4 @@ def display_csv(sql_clicks, mongodb_clicks):
 
 # Run the Dash app
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(debug=False, port=8050)  # Main app sur le port 8050

@@ -1,101 +1,101 @@
 nom_ligne,classification_retard
-T30,retard moyen > 5min
-M6,retard moyen > 5min
-B8,retard moyen > 5min
-T8,retard moyen > 5min
-M15,retard moyen > 5min
-M2,retard moyen > 5min
-M34,retard moyen > 5min
-M9,retard moyen > 5min
-M19,retard moyen > 5min
-B13,retard moyen > 5min
-T20,retard moyen > 5min
-M33,retard moyen > 5min
-M36,retard moyen > 5min
-T13,retard moyen > 5min
-T18,retard moyen > 5min
-T11,retard moyen > 5min
-T22,retard moyen > 5min
-M1,retard moyen > 5min
-M5,retard moyen > 5min
-B12,retard moyen > 5min
-M28,retard moyen > 5min
-B24,retard moyen > 5min
-T29,retard moyen > 5min
-M13,retard moyen > 5min
-B9,retard moyen > 5min
-B21,retard moyen > 5min
-T15,retard moyen > 5min
-T17,retard moyen > 5min
-M12,retard moyen > 5min
-B18,retard moyen > 5min
-B3,retard moyen > 5min
-T33,retard moyen > 5min
-T23,retard moyen > 5min
-T32,retard moyen > 5min
-T7,retard moyen > 5min
-B15,retard moyen > 5min
-M20,retard moyen > 5min
-T28,retard moyen > 5min
-M29,retard moyen > 5min
-M10,retard moyen > 5min
-B7,retard moyen > 5min
-M31,retard moyen > 5min
-B2,retard moyen > 5min
-B10,retard moyen > 5min
-M38,retard moyen > 5min
-T25,retard moyen > 5min
-T9,retard moyen > 5min
-M3,retard moyen > 5min
-M7,retard moyen > 5min
-M21,retard moyen > 5min
-T19,retard moyen > 5min
-M25,retard moyen > 5min
-T5,retard moyen > 5min
-T3,retard moyen > 5min
-M16,retard moyen > 5min
-B4,retard moyen > 5min
-M27,retard moyen > 5min
-M17,retard moyen > 5min
-T12,retard moyen > 5min
-B11,retard moyen > 5min
-M8,retard moyen > 5min
-B22,retard moyen > 5min
-B25,retard moyen > 5min
-M35,retard moyen > 5min
-M14,retard moyen > 5min
-T10,retard moyen > 5min
-M11,retard moyen > 5min
-M24,retard moyen > 5min
-B27,retard moyen > 5min
-M22,retard moyen > 5min
-B14,retard moyen > 5min
-T31,retard moyen > 5min
-M30,retard moyen > 5min
-M32,retard moyen > 5min
-M26,retard moyen > 5min
-T24,retard moyen > 5min
-T6,retard moyen > 5min
-B19,retard moyen > 5min
-M18,retard moyen > 5min
-T4,retard moyen > 5min
-B16,retard moyen > 5min
-T21,retard moyen > 5min
-B5,retard moyen > 5min
-T2,retard moyen > 5min
-T14,retard moyen > 5min
-B26,retard moyen > 5min
-T1,retard moyen > 5min
-B23,retard moyen > 5min
-M39,retard moyen > 5min
-T16,retard moyen > 5min
-M37,retard moyen > 5min
-B6,retard moyen > 5min
-T26,retard moyen > 5min
-M23,retard moyen > 5min
-B28,retard moyen > 5min
-T27,retard moyen > 5min
-B20,retard moyen > 5min
-B17,retard moyen > 5min
-B1,retard moyen > 5min
-M4,retard moyen > 5min
+B1,retard moyen sup a 5min
+B10,retard moyen sup a 5min
+B11,retard moyen sup a 5min
+B12,retard moyen sup a 5min
+B13,retard moyen sup a 5min
+B14,retard moyen sup a 5min
+B15,retard moyen sup a 5min
+B16,retard moyen sup a 5min
+B17,retard moyen sup a 5min
+B18,retard moyen sup a 5min
+B19,retard moyen sup a 5min
+B2,retard moyen sup a 5min
+B20,retard moyen sup a 5min
+B21,retard moyen sup a 5min
+B22,retard moyen sup a 5min
+B23,retard moyen sup a 5min
+B24,retard moyen sup a 5min
+B25,retard moyen sup a 5min
+B26,retard moyen sup a 5min
+B27,retard moyen sup a 5min
+B28,retard moyen sup a 5min
+B3,retard moyen sup a 5min
+B4,retard moyen sup a 5min
+B5,retard moyen sup a 5min
+B6,retard moyen sup a 5min
+B7,retard moyen sup a 5min
+B8,retard moyen sup a 5min
+B9,retard moyen sup a 5min
+M1,retard moyen sup a 5min
+M10,retard moyen sup a 5min
+M11,retard moyen sup a 5min
+M12,retard moyen sup a 5min
+M13,retard moyen sup a 5min
+M14,retard moyen sup a 5min
+M15,retard moyen sup a 5min
+M16,retard moyen sup a 5min
+M17,retard moyen sup a 5min
+M18,retard moyen sup a 5min
+M19,retard moyen sup a 5min
+M2,retard moyen sup a 5min
+M20,retard moyen sup a 5min
+M21,retard moyen sup a 5min
+M22,retard moyen sup a 5min
+M23,retard moyen sup a 5min
+M24,retard moyen sup a 5min
+M25,retard moyen sup a 5min
+M26,retard moyen sup a 5min
+M27,retard moyen sup a 5min
+M28,retard moyen sup a 5min
+M29,retard moyen sup a 5min
+M3,retard moyen sup a 5min
+M30,retard moyen sup a 5min
+M31,retard moyen sup a 5min
+M32,retard moyen sup a 5min
+M33,retard moyen sup a 5min
+M34,retard moyen sup a 5min
+M35,retard moyen sup a 5min
+M36,retard moyen sup a 5min
+M37,retard moyen sup a 5min
+M38,retard moyen sup a 5min
+M39,retard moyen sup a 5min
+M4,retard moyen sup a 5min
+M5,retard moyen sup a 5min
+M6,retard moyen sup a 5min
+M7,retard moyen sup a 5min
+M8,retard moyen sup a 5min
+M9,retard moyen sup a 5min
+T1,retard moyen sup a 5min
+T10,retard moyen sup a 5min
+T11,retard moyen sup a 5min
+T12,retard moyen sup a 5min
+T13,retard moyen sup a 5min
+T14,retard moyen sup a 5min
+T15,retard moyen sup a 5min
+T16,retard moyen sup a 5min
+T17,retard moyen sup a 5min
+T18,retard moyen sup a 5min
+T19,retard moyen sup a 5min
+T2,retard moyen sup a 5min
+T20,retard moyen sup a 5min
+T21,retard moyen sup a 5min
+T22,retard moyen sup a 5min
+T23,retard moyen sup a 5min
+T24,retard moyen sup a 5min
+T25,retard moyen sup a 5min
+T26,retard moyen sup a 5min
+T27,retard moyen sup a 5min
+T28,retard moyen sup a 5min
+T29,retard moyen sup a 5min
+T3,retard moyen sup a 5min
+T30,retard moyen sup a 5min
+T31,retard moyen sup a 5min
+T32,retard moyen sup a 5min
+T33,retard moyen sup a 5min
+T4,retard moyen sup a 5min
+T5,retard moyen sup a 5min
+T6,retard moyen sup a 5min
+T7,retard moyen sup a 5min
+T8,retard moyen sup a 5min
+T9,retard moyen sup a 5min
