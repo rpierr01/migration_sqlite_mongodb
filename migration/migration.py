@@ -1,6 +1,6 @@
 """
 ==============================================================
-🚀 Partie 2 — Migration SQLite → MongoDB (OPTIMISÉE)
+Partie 2 — Migration SQLite → MongoDB (OPTIMISÉE)
 ==============================================================
 
 Améliorations par rapport à la v1 :
@@ -15,7 +15,6 @@ import sqlite3
 import pandas as pd
 from pymongo import MongoClient, GEOSPHERE
 from tqdm import tqdm
-import sys
 
 # --- CONFIGURATION ---
 SQLITE_PATH = "data/Paris2055.sqlite"
@@ -23,22 +22,22 @@ MONGO_URI = "mongodb://localhost:27017/"
 MONGO_DB_NAME = "Paris2055"
 
 # --- CONNEXIONS ---
-print("🔗 Connexion à la base SQLite...")
+print("Connexion à la base SQLite...")
 conn = sqlite3.connect(SQLITE_PATH)
 
-print("🔗 Connexion à MongoDB...")
+print("Connexion à MongoDB...")
 client = MongoClient(MONGO_URI)
 db = client[MONGO_DB_NAME]
 
 # Nettoyage préalable
-print("🧹 Nettoyage des collections existantes...")
+print("Nettoyage des collections existantes...")
 db.Lignes.drop()
 db.Arrets.drop()
 db.Vehicules.drop()
 db.Trafic.drop()
 
 # --- CHARGEMENT ET PRÉ-TRAITEMENT DES DONNÉES ---
-print("📥 Chargement et pré-traitement des DataFrames...")
+print("Chargement et pré-traitement des DataFrames...")
 
 # Fonction pour convertir les dates en objets datetime Python
 def convert_dates(df, cols):
@@ -65,12 +64,9 @@ convert_dates(chauffeurs, ["date_embauche"])
 convert_dates(mesures, ["horodatage"])
 convert_dates(trafics, ["horodatage"])
 convert_dates(incidents, ["horodatage"])
-# Pour les horaires, c'est souvent juste des heures (HH:MM), on laisse ou on convertit selon le format exact
-# Si c'est "HH:MM:SS", on peut laisser en string ou convertir en datetime complet si besoin.
 
 # 3. Préparation des Groupes (OPTIMISATION N+1)
-# Au lieu de filtrer dans la boucle, on prépare des dictionnaires de DataFrames
-print("⚡ Indexation des données en mémoire pour accélération...")
+print("Indexation des données en mémoire pour accélération...")
 
 # Groupement Quartiers par Arret
 df_aq_full = arret_quartier.merge(quartiers, on="id_quartier")
@@ -88,10 +84,10 @@ groups_capteurs = capteurs.groupby("id_arret")
 # Groupement Incidents par Trafic
 groups_incidents = incidents.groupby("id_trafic")
 
-# Jointure Chauffeurs sur Véhicules (plus simple que le groupby pour du 1-1)
-vehicules_full = vehicules.merge(chauffeurs, on="id_chauffeur", how="left")
+# Jointure Chauffeurs sur Véhicules
+vehicules_full = vehicules.merge(chauffeurs, on="id_chauffeur", how="left", validate="m:1")
 
-print("✅ Pré-traitement terminé.")
+print("Pré-traitement terminé.")
 
 # --- COMPTEURS ---
 total_stats = {
@@ -99,10 +95,15 @@ total_stats = {
     "trafic": 0, "mesures": 0, "incidents": 0
 }
 
+# Insert helper to process collections in chunks to reduce memory and driver overhead
+def chunked(seq, size):
+    for i in range(0, len(seq), size):
+        yield seq[i:i + size]
+
 # =============================================================================
 # COLLECTION 1 : LIGNES
 # =============================================================================
-print("\n🚌 Migration LIGNES...")
+print("\nMigration LIGNES...")
 docs_lignes = lignes.to_dict(orient="records")
 if docs_lignes:
     db.Lignes.insert_many(docs_lignes)
@@ -111,145 +112,118 @@ if docs_lignes:
 # =============================================================================
 # COLLECTION 2 : ARRETS (Complexe : GeoJSON + Imbrications)
 # =============================================================================
-print("🚏 Migration ARRETS (avec GeoJSON)...")
+print("Migration ARRETS (avec GeoJSON)...")
 docs_arrets = []
 
-# Disable tqdm progress bars
-for _, arret in tqdm(arrets.iterrows(), total=len(arrets), disable=True):
+# Pré-calcul des données imbriquées pour limiter les groupby répétés
+quartiers_by_arret = {k: v[["id_quartier", "nom"]].to_dict(orient="records") for k, v in groups_quartiers}
+horaires_by_arret = {k: v[["id_vehicule", "heure_prevue", "heure_effective", "passagers_estimes"]].to_dict(orient="records") for k, v in groups_horaires}
+mesures_by_capteur = {k: v[["horodatage", "valeur", "unite"]].to_dict(orient="records") for k, v in groups_mesures}
+total_stats["mesures"] = sum(len(v) for v in mesures_by_capteur.values())
+
+capteurs_by_arret = {}
+for k, sub_capteurs in groups_capteurs:
+    caps = []
+    for _, cap in sub_capteurs.iterrows():
+        id_cap = cap["id_capteur"]
+        caps.append({
+            "id_capteur": int(id_cap),
+            "type_capteur": cap["type_capteur"],
+            "location": {"type": "Point", "coordinates": [cap["longitude"], cap["latitude"]]},
+            "mesures": mesures_by_capteur.get(id_cap, [])
+        })
+    capteurs_by_arret[k] = caps
+
+# Construction des documents Arrets via dicts pré-calculés (plus rapide que iterrows)
+for arret in tqdm(arrets.to_dict(orient="records"), total=len(arrets), disable=False):
     id_arret = arret["id_arret"]
-    
-    # 1. Récupération optimisée des Quartiers
-    list_quartiers = []
-    if id_arret in groups_quartiers.groups:
-        list_quartiers = groups_quartiers.get_group(id_arret)[["id_quartier", "nom"]].to_dict(orient="records")
-
-    # 2. Récupération optimisée des Horaires
-    list_horaires = []
-    if id_arret in groups_horaires.groups:
-        list_horaires = groups_horaires.get_group(id_arret)[["id_vehicule", "heure_prevue", "heure_effective", "passagers_estimes"]].to_dict(orient="records")
-
-    # 3. Récupération optimisée Capteurs + Mesures
-    list_capteurs = []
-    if id_arret in groups_capteurs.groups:
-        sub_capteurs = groups_capteurs.get_group(id_arret)
-        for _, cap in sub_capteurs.iterrows():
-            id_cap = cap["id_capteur"]
-            
-            # Mesures du capteur
-            list_mesures = []
-            if id_cap in groups_mesures.groups:
-                list_mesures = groups_mesures.get_group(id_cap)[["horodatage", "valeur", "unite"]].to_dict(orient="records")
-                total_stats["mesures"] += len(list_mesures)
-
-            list_capteurs.append({
-                "id_capteur": int(id_cap),
-                "type_capteur": cap["type_capteur"],
-                # GeoJSON optionnel pour le capteur
-                "location": {"type": "Point", "coordinates": [cap["longitude"], cap["latitude"]]},
-                "mesures": list_mesures
-            })
-
-    # Construction du document Arret
     doc = {
         "id_arret": int(id_arret),
         "nom": arret["nom"],
         "id_ligne": int(arret["id_ligne"]),
-        # GEOJSON STANDARD (Longitude d'abord !)
-        "location": {
-            "type": "Point",
-            "coordinates": [arret["longitude"], arret["latitude"]]
-        },
-        # On garde les champs plats pour compatibilité si besoin
+        "location": {"type": "Point", "coordinates": [arret["longitude"], arret["latitude"]]},
         "latitude": arret["latitude"],
         "longitude": arret["longitude"],
-        "quartiers": list_quartiers,
-        "capteurs": list_capteurs,
-        "horaires": list_horaires
+        "quartiers": quartiers_by_arret.get(id_arret, []),
+        "capteurs": capteurs_by_arret.get(id_arret, []),
+        "horaires": horaires_by_arret.get(id_arret, [])
     }
     docs_arrets.append(doc)
 
 if docs_arrets:
-    db.Arrets.insert_many(docs_arrets)
+    for batch in chunked(docs_arrets, 5000):
+        db.Arrets.insert_many(batch, ordered=False, bypass_document_validation=True)
     total_stats["arrets"] = len(docs_arrets)
 
 # =============================================================================
 # COLLECTION 3 : VEHICULES (avec Chauffeur)
 # =============================================================================
-print("🚐 Migration VEHICULES...")
+print("Migration VEHICULES...")
 docs_vehicules = []
 
-# On utilise le DataFrame déjà fusionné 'vehicules_full'
-for _, row in tqdm(vehicules_full.iterrows(), total=len(vehicules_full)):
+for row in tqdm(vehicules_full.itertuples(index=False), total=len(vehicules_full)):
     chauffeur_doc = {
-        "id_chauffeur": int(row["id_chauffeur"]),
-        "nom": row["nom"], # Vient de la jointure
-        "date_embauche": row["date_embauche"] # Vient de la jointure (déjà en datetime)
+        "id_chauffeur": int(row.id_chauffeur),
+        "nom": row.nom,
+        "date_embauche": row.date_embauche
     }
-    
-    doc = {
-        "id_vehicule": int(row["id_vehicule"]),
-        "immatriculation": row["immatriculation"],
-        "id_ligne": int(row["id_ligne"]),
-        "type_vehicule": row["type_vehicule"],
-        "capacite": int(row["capacite"]),
+    docs_vehicules.append({
+        "id_vehicule": int(row.id_vehicule),
+        "immatriculation": row.immatriculation,
+        "id_ligne": int(row.id_ligne),
+        "type_vehicule": row.type_vehicule,
+        "capacite": int(row.capacite),
         "chauffeur": chauffeur_doc
-    }
-    docs_vehicules.append(doc)
+    })
 
 if docs_vehicules:
-    db.Vehicules.insert_many(docs_vehicules)
+    for batch in chunked(docs_vehicules, 10000):
+        db.Vehicules.insert_many(batch, ordered=False, bypass_document_validation=True)
     total_stats["vehicules"] = len(docs_vehicules)
 
 # =============================================================================
 # COLLECTION 4 : TRAFIC (avec Incidents)
 # =============================================================================
-print("⚠️  Migration TRAFIC...")
+print("Migration TRAFIC...")
 docs_trafic = []
 
-for _, row in tqdm(trafics.iterrows(), total=len(trafics)):
-    id_trafic = row["id_trafic"]
-    
-    list_incidents = []
-    if id_trafic in groups_incidents.groups:
-        list_incidents = groups_incidents.get_group(id_trafic)[["description", "gravite", "horodatage"]].to_dict(orient="records")
-        total_stats["incidents"] += len(list_incidents)
-    
-    doc = {
-        "id_trafic": int(id_trafic),
-        "id_ligne": int(row["id_ligne"]),
-        "horodatage": row["horodatage"], # Déjà datetime
-        "retard_minutes": int(row["retard_minutes"]),
-        "evenement": row["evenement"],
-        "incidents": list_incidents
-    }
-    docs_trafic.append(doc)
+incidents_by_trafic = {k: v[["description", "gravite", "horodatage"]].to_dict(orient="records") for k, v in groups_incidents}
+total_stats["incidents"] = sum(len(v) for v in incidents_by_trafic.values())
+
+for row in tqdm(trafics.itertuples(index=False), total=len(trafics)):
+    docs_trafic.append({
+        "id_trafic": int(row.id_trafic),
+        "id_ligne": int(row.id_ligne),
+        "horodatage": row.horodatage,
+        "retard_minutes": int(row.retard_minutes),
+        "evenement": row.evenement,
+        "incidents": incidents_by_trafic.get(row.id_trafic, [])
+    })
 
 if docs_trafic:
-    db.Trafic.insert_many(docs_trafic)
+    for batch in chunked(docs_trafic, 10000):
+        db.Trafic.insert_many(batch, ordered=False, bypass_document_validation=True)
     total_stats["trafic"] = len(docs_trafic)
 
 # --- INDEXATION ---
-print("\n🔍 Création des index (dont Géospatial)...")
-# Index Géospatial pour les cartes (Partie 4)
+print("\nCréation des index (dont Géospatial)...")
 db.Arrets.create_index([("location", GEOSPHERE)])
-
-# Index standards pour la performance
 db.Lignes.create_index("id_ligne")
 db.Arrets.create_index("id_ligne")
-db.Arrets.create_index("quartiers.id_quartier") # Pour chercher par quartier
+db.Arrets.create_index("quartiers.id_quartier")
 db.Vehicules.create_index("id_ligne")
 db.Trafic.create_index("id_ligne")
-db.Trafic.create_index("horodatage") # Pour les séries temporelles
+db.Trafic.create_index("horodatage")
 
 # --- RÉSUMÉ ---
 print("\n" + "="*60)
-print("✅ MIGRATION TERMINÉE AVEC SUCCÈS")
+print("MIGRATION TERMINÉE AVEC SUCCÈS")
 print("="*60)
-print(f"🚌 Lignes      : {total_stats['lignes']}")
-print(f"🚏 Arrêts      : {total_stats['arrets']} (Index GeoSphere activé)")
-print(f"🚐 Véhicules   : {total_stats['vehicules']}")
-print(f"⚠️  Trafic      : {total_stats['trafic']}")
-print(f"📈 Mesures     : {total_stats['mesures']} (imbriquées)")
-print(f"🚨 Incidents   : {total_stats['incidents']} (imbriqués)")
+print(f"Lignes      : {total_stats['lignes']}")
+print(f"Arrêts      : {total_stats['arrets']} (Index GeoSphere activé)")
+print(f"Véhicules   : {total_stats['vehicules']}")
+print(f"Trafic      : {total_stats['trafic']}")
+print(f"Mesures     : {total_stats['mesures']} (imbriquées)")
+print(f"Incidents   : {total_stats['incidents']} (imbriqués)")
 conn.close()
 client.close()
