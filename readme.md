@@ -2,9 +2,9 @@
 
 ## Organisation du projet
 
-- Travail collaboratif sur GitHub.
+- Travail collaboratif sur GitHub. URL : **https://github.com/rpierr01/migration_sqlite_mongodb.git**
 - Taux d'utilisation de l'IA estimé à **70%**.
-- Nous avons décidé de travailler avec Dash car c'est un framework que nous trouvons parfaitement adapté bien que cet outil ne sit pas explicitement proposé sur le sujet.
+- Nous avons décidé de travailler avec Dash car c'est un framework que nous trouvons parfaitement adapté bien que cet outil ne soit pas explicitement proposé sur le sujet.
 
 ### Membres de l'équipe
 
@@ -16,6 +16,7 @@
 
 ## Utilisation du logiciel
 
+Exécuter la commande (`pip install -r requirements.txt`) pour l'installation des bibliothèques.
 Le programme `run_all.py` permet de lancer le logiciel Dash dans son intégralité.
 
 ### Partie 1 : Requête SQL
