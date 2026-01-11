@@ -18,6 +18,7 @@
 
 Exécuter la commande (`pip install -r requirements.txt`) pour l'installation des bibliothèques.
 Le programme `run_all.py` permet de lancer le logiciel Dash dans son intégralité.
+Note : certaines pages du tableau de bord peuvent mettre quelques secondes à charger.
 
 ### Partie 1 : Requête SQL
 
