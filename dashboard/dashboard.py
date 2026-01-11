@@ -438,44 +438,54 @@ df_l = load("mongo_requete_l.csv")
 df_m = load("mongo_requete_m.csv")
 df_n = load("mongo_requete_n.csv")
 
-# --- CORRECTION GRAPHE E et J ---
-# On vérifie si la colonne 'segment' existe (créée par la nouvelle requête Mongo)
-if not df_e.empty and 'segment' in df_e.columns:
-    # 1. Top 5 (Les plus bruyants)
-    df_e_top = df_e[df_e['segment'] == 'top5'].sort_values("avg_bruit", ascending=False)
-    
-    # 2. Bottom 5 (Les MOINS bruyants)
-    df_e_bot = df_e[df_e['segment'] == 'bottom5'].sort_values("avg_bruit", ascending=True)
-else:
-    # Fallback si l'utilisateur n'a pas relancé la requête Mongo
-    # Cela va probablement afficher des données incorrectes mais évite le crash
-    df_e_top = df_e.sort_values("avg_bruit", ascending=False).head(5)
-    df_e_bot = df_e.sort_values("avg_bruit", ascending=True).head(5)
+
 
 # Construction Figure E
-fig_e_bruit = px.bar(
-    df_e_top, 
+fig_e = px.bar(
+    df_e, 
     x="quartier_nom", 
     y="avg_bruit", 
     title="Top 5 Quartiers les Plus Bruyants (Niveau Sonore Moyen)"
 )
-if not df_e_top.empty:
-    e_min = df_e_top["avg_bruit"].min()
-    e_max = df_e_top["avg_bruit"].max()
-    fig_e_bruit.update_layout(yaxis=dict(range=[e_min * 0.98, e_max * 1.01]))
+if not df_e.empty:
+    e_min = df_e["avg_bruit"].min()
+    e_max = df_e["avg_bruit"].max()
+    fig_e.update_layout(yaxis=dict(range=[e_min * 0.98, e_max * 1.01]))
 
-# Construction Figure J
-fig_j_new = px.bar(
-    df_e_bot, 
-    x="quartier_nom", 
-    y="avg_bruit", 
-    title="Top 5 Quartiers les Moins Bruyants (Niveau Sonore Moyen)",
-    color_discrete_sequence=['#2ecc71']
-)
-if not df_e_bot.empty:
-    j_min = df_e_bot["avg_bruit"].min()
-    j_max = df_e_bot["avg_bruit"].max()
-    fig_j_new.update_layout(yaxis=dict(range=[j_min * 0.98, j_max * 1.01]))
+
+
+# ---  fig_j_temp (Top/Bottom Températures) ---
+if not df_j.empty:
+    # On trie les données
+    df_sorted = df_j.sort_values("avg_temperature", ascending=False)
+    
+    # On prend les 10 plus chaudes et les 10 plus froides
+    top_10 = df_sorted.head(10)
+    bottom_10 = df_sorted.tail(10)
+    
+    # On combine les deux
+    df_j_filtered = pd.concat([top_10, bottom_10])
+    
+    # On crée le graphique
+    fig_j_temp = px.bar(
+        df_j_filtered, 
+        x="nom_ligne", 
+        y="avg_temperature", 
+        title="Température : Top 10 Chaudes vs 10 Froides", 
+        color="avg_temperature", 
+        color_continuous_scale="RdBu_r",
+        text_auto='.1f' # Affiche la valeur sur la barre
+    )
+    
+    # Zoomer sur l'échelle Y pour voir les différences
+    y_min = df_j_filtered["avg_temperature"].min() * 0.99
+    y_max = df_j_filtered["avg_temperature"].max() * 1.01
+    fig_j_temp.update_layout(yaxis=dict(range=[y_min, y_max]))
+    fig_j_temp.update_traces(textposition='outside')
+else:
+    fig_j_temp = px.bar(title="Pas de données Température")
+
+
 
 # --- Autres Graphiques ---
 # MODIFICATION: Échelle logarithmique pour les retards
@@ -624,8 +634,8 @@ app.layout = html.Div([
                 html.H3("m. Carte de Chaleur Folium (Pollution CO2)", style={'textAlign': 'center'}),
                 html.Iframe(srcDoc=map_html, style={'width': '100%', 'height': '600px', 'border': 'none'}),
                 html.Div([
-                    dcc.Graph(figure=fig_e_bruit, style={'width': '50%', 'display': 'inline-block'}),
-                    dcc.Graph(figure=fig_j_new, style={'width': '50%', 'display': 'inline-block'}),
+                    dcc.Graph(figure=fig_e, style={'width': '50%', 'display': 'inline-block'}),
+                    dcc.Graph(figure=fig_j_temp, style={'width': '50%', 'display': 'inline-block'}),
                 ]),
                 dcc.Graph(figure=fig_d_co2)
             ])
