@@ -131,16 +131,25 @@ else:
     df_e_bot = df_e.sort_values("avg_bruit", ascending=True).head(5)
 
 # Construction Figure E
-fig_e_bruit = px.bar(df_e_top, x="quartier_nom", y="avg_bruit", title="e. Top 5 Quartiers bruyants (+)")
+fig_e_bruit = px.bar(
+    df_e_top, 
+    x="quartier_nom", 
+    y="avg_bruit", 
+    title="Top 5 Quartiers les Plus Bruyants (Niveau Sonore Moyen)"
+)
 if not df_e_top.empty:
     e_min = df_e_top["avg_bruit"].min()
     e_max = df_e_top["avg_bruit"].max()
     fig_e_bruit.update_layout(yaxis=dict(range=[e_min * 0.98, e_max * 1.01]))
 
 # Construction Figure J
-fig_j_new = px.bar(df_e_bot, x="quartier_nom", y="avg_bruit", 
-                   title="j. Top 5 Quartiers les MOINS bruyants (-)",
-                   color_discrete_sequence=['#2ecc71']) 
+fig_j_new = px.bar(
+    df_e_bot, 
+    x="quartier_nom", 
+    y="avg_bruit", 
+    title="Top 5 Quartiers les Moins Bruyants (Niveau Sonore Moyen)",
+    color_discrete_sequence=['#2ecc71']
+)
 if not df_e_bot.empty:
     j_min = df_e_bot["avg_bruit"].min()
     j_max = df_e_bot["avg_bruit"].max()
@@ -148,31 +157,77 @@ if not df_e_bot.empty:
 
 # --- Autres Graphiques ---
 df_a_subset = df_a.sort_values("avg_retard", ascending=False).head(15) if not df_a.empty else df_a
-fig_a_retard = px.bar(df_a_subset, x="nom_ligne", y="avg_retard", title="Retards par ligne")
+fig_a_retard = px.bar(
+    df_a_subset, 
+    x="nom_ligne", 
+    y="avg_retard", 
+    title="Retards Moyens par Ligne de Bus"
+)
 if not df_a_subset.empty:
     a_min = df_a_subset["avg_retard"].min()
     a_max = df_a_subset["avg_retard"].max()
     fig_a_retard.update_layout(yaxis=dict(range=[a_min * 0.90, a_max * 1.05]))
 
 df_k_subset = df_k.sort_values("avg_retard_minutes").head(10) if not df_k.empty else df_k
-fig_k_chauffeurs = px.bar(df_k_subset, x="chauffeur_nom", y="avg_retard_minutes", title="Top Chauffeurs")
+fig_k_chauffeurs = px.bar(
+    df_k_subset, 
+    x="chauffeur_nom", 
+    y="avg_retard_minutes", 
+    title="Top 10 Chauffeurs avec les Retards Moyens les Plus Élevés"
+)
 if not df_k_subset.empty:
     k_min = df_k_subset["avg_retard_minutes"].min()
     k_max = df_k_subset["avg_retard_minutes"].max()
     fig_k_chauffeurs.update_layout(yaxis=dict(range=[k_min * 0.90, k_max * 1.05]))
 
-fig_d_co2 = px.histogram(df_d, x="avg_co2", color="type_vehicule", title="d. Émissions CO2", barmode="overlay")
-fig_n_pie = px.pie(df_n, names="classification_retard", title="n. Fiabilité")
-fig_c_incidents = px.scatter(df_c, x="nom_ligne", y="incident_taux", size="incident_taux")
+fig_d_co2 = px.histogram(
+    df_d, 
+    x="avg_co2", 
+    color="type_vehicule", 
+    title="Répartition des Émissions de CO2 par Type de Véhicule", 
+    barmode="overlay"
+)
+fig_n_pie = px.pie(
+    df_n, 
+    names="classification_retard", 
+    title="Répartition des Retards par Classification"
+)
+fig_c_incidents = px.scatter(
+    df_c, 
+    x="nom_ligne", 
+    y="incident_taux", 
+    size="incident_taux", 
+    title="Taux d'Incidents par Ligne de Bus"
+)
 
 if not df_b.empty:
-    fig_b_passagers = px.line(df_b.groupby("jour")["avg_passagers"].mean().reset_index(), x="jour", y="avg_passagers")
+    fig_b_passagers = px.line(
+        df_b.groupby("jour")["avg_passagers"].mean().reset_index(), 
+        x="jour", 
+        y="avg_passagers", 
+        title="Évolution Moyenne du Nombre de Passagers par Jour"
+    )
 else:
-    fig_b_passagers = px.line(title="Pas de données passagers")
+    fig_b_passagers = px.line(title="Pas de Données sur les Passagers Disponibles")
 
-fig_l_elec = px.bar(df_l.sort_values("taux_electrique", ascending=False), x="nom_ligne", y="taux_electrique")
-fig_h_quartiers = px.treemap(df_h, path=['quartier_nom'], values='arret_count')
-fig_i_corr = px.bar(df_i.sort_values("correlation"), x="nom_ligne", y="correlation")
+fig_l_elec = px.bar(
+    df_l.sort_values("taux_electrique", ascending=False), 
+    x="nom_ligne", 
+    y="taux_electrique", 
+    title="Taux de Véhicules Électriques par Ligne"
+)
+fig_h_quartiers = px.treemap(
+    df_h, 
+    path=['quartier_nom'], 
+    values='arret_count', 
+    title="Répartition des Arrêts de Bus par Quartier"
+)
+fig_i_corr = px.bar(
+    df_i.sort_values("correlation"), 
+    x="nom_ligne", 
+    y="correlation", 
+    title="Corrélation entre les Retards et les Lignes de Bus"
+)
 
 # --- LAYOUT DASH ---
 app = dash.Dash(__name__)

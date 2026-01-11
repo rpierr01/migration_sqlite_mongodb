@@ -307,10 +307,10 @@ res_n = db.Trafic.aggregate([
         "classification_retard": {
             "$switch": {
                 "branches": [
-                    {"case": {"$eq": ["$avg_r", 0]}, "then": "aucun retard"},
-                    {"case": {"$lt": ["$avg_r", 5]}, "then": "retard moyen inf a 5min"}
+                    {"case": {"$lt": ["$avg_r", 6.5]}, "then": "retard moyen inf a 6min30"},
+                    {"case": {"$lt": ["$avg_r", 7]}, "then": "retard moyen inf a 7min"}
                 ],
-                "default": "retard moyen sup a 5min"
+                "default": "retard moyen sup a 7min"
             }
         }
     }},

@@ -256,9 +256,9 @@ pd.DataFrame(result_m, columns=["id_capteur", "latitude", "longitude", "valeur",
 curseur.execute("""
     SELECT nom_ligne,
            CASE
-               WHEN AVG(retard_minutes) = 0 THEN 'aucun retard'
-               WHEN AVG(retard_minutes) < 5 THEN 'retard moyen inf a 5min'
-               ELSE 'retard moyen sup a 5min'
+               WHEN AVG(retard_minutes) < 6.5 THEN 'retard moyen inf a 6min30'
+               WHEN AVG(retard_minutes) < 7 THEN 'retard moyen inf a 7min'
+               ELSE 'retard moyen sup a 7min'
            END AS classification_retard
     FROM Ligne
     LEFT JOIN Trafic ON Ligne.id_ligne = Trafic.id_ligne

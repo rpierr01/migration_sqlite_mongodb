@@ -1,0 +1,224 @@
+(venv) remipierron@mac-1 migration_sqlite_mongodb % python migration/info_base_sql.py
+🔗 Connexion réussie à data/Paris2055.sqlite
+============================================================
+📋 Tables présentes dans la base :
+ - Ligne
+ - Quartier
+ - Arret
+ - ArretQuartier
+ - Chauffeur
+ - Vehicule
+ - Horaire
+ - Capteur
+ - Mesure
+ - Trafic
+ - Incident
+============================================================
+🧱 Structure de la table 'Ligne' :
+                    name     type  pk
+0               id_ligne  INTEGER   1
+1              nom_ligne     TEXT   0
+2                   type     TEXT   0
+3  frequentation_moyenne  INTEGER   0
+----------------------------------------
+🧱 Structure de la table 'Quartier' :
+          name     type  pk
+0  id_quartier  INTEGER   1
+1          nom     TEXT   0
+2      geojson     TEXT   0
+----------------------------------------
+🧱 Structure de la table 'Arret' :
+        name     type  pk
+0   id_arret  INTEGER   1
+1        nom     TEXT   0
+2   latitude     REAL   0
+3  longitude     REAL   0
+4   id_ligne  INTEGER   0
+----------------------------------------
+🧱 Structure de la table 'ArretQuartier' :
+          name     type  pk
+0     id_arret  INTEGER   1
+1  id_quartier  INTEGER   2
+----------------------------------------
+🧱 Structure de la table 'Chauffeur' :
+            name     type  pk
+0   id_chauffeur  INTEGER   1
+1            nom     TEXT   0
+2  date_embauche     TEXT   0
+----------------------------------------
+🧱 Structure de la table 'Vehicule' :
+              name     type  pk
+0      id_vehicule  INTEGER   1
+1  immatriculation     TEXT   0
+2         id_ligne  INTEGER   0
+3     id_chauffeur  INTEGER   0
+4    type_vehicule     TEXT   0
+5         capacite  INTEGER   0
+----------------------------------------
+🧱 Structure de la table 'Horaire' :
+                name     type  pk
+0         id_horaire  INTEGER   1
+1           id_arret  INTEGER   0
+2        id_vehicule  INTEGER   0
+3       heure_prevue     TEXT   0
+4    heure_effective     TEXT   0
+5  passagers_estimes  INTEGER   0
+----------------------------------------
+🧱 Structure de la table 'Capteur' :
+           name     type  pk
+0    id_capteur  INTEGER   1
+1      id_arret  INTEGER   0
+2  type_capteur     TEXT   0
+3      latitude     REAL   0
+4     longitude     REAL   0
+----------------------------------------
+🧱 Structure de la table 'Mesure' :
+         name     type  pk
+0   id_mesure  INTEGER   1
+1  id_capteur  INTEGER   0
+2  horodatage     TEXT   0
+3      valeur     REAL   0
+4       unite     TEXT   0
+----------------------------------------
+🧱 Structure de la table 'Trafic' :
+             name     type  pk
+0       id_trafic  INTEGER   1
+1        id_ligne  INTEGER   0
+2      horodatage     TEXT   0
+3  retard_minutes  INTEGER   0
+4       evenement     TEXT   0
+----------------------------------------
+🧱 Structure de la table 'Incident' :
+          name     type  pk
+0  id_incident  INTEGER   1
+1    id_trafic  INTEGER   0
+2  description     TEXT   0
+3      gravite  INTEGER   0
+4   horodatage     TEXT   0
+----------------------------------------
+============================================================
+🔗 Clés étrangères dans 'Arret' :
+   from_col table_ref    to_col
+0  id_ligne     Ligne  id_ligne
+----------------------------------------
+🔗 Clés étrangères dans 'ArretQuartier' :
+      from_col table_ref       to_col
+0  id_quartier  Quartier  id_quartier
+1     id_arret     Arret     id_arret
+----------------------------------------
+🔗 Clés étrangères dans 'Vehicule' :
+       from_col  table_ref        to_col
+0  id_chauffeur  Chauffeur  id_chauffeur
+1      id_ligne      Ligne      id_ligne
+----------------------------------------
+🔗 Clés étrangères dans 'Horaire' :
+      from_col table_ref       to_col
+0  id_vehicule  Vehicule  id_vehicule
+1     id_arret     Arret     id_arret
+----------------------------------------
+🔗 Clés étrangères dans 'Capteur' :
+   from_col table_ref    to_col
+0  id_arret     Arret  id_arret
+----------------------------------------
+🔗 Clés étrangères dans 'Mesure' :
+     from_col table_ref      to_col
+0  id_capteur   Capteur  id_capteur
+----------------------------------------
+🔗 Clés étrangères dans 'Trafic' :
+   from_col table_ref    to_col
+0  id_ligne     Ligne  id_ligne
+----------------------------------------
+🔗 Clés étrangères dans 'Incident' :
+    from_col table_ref     to_col
+0  id_trafic    Trafic  id_trafic
+----------------------------------------
+============================================================
+📊 Aperçu des données dans 'Ligne' :
+   id_ligne nom_ligne   type  frequentation_moyenne
+0         1        B1    Bus                    704
+1         2        T1   Tram                   2506
+2         3        B2    Bus                   1339
+3         4        M1  Metro                   4967
+4         5        M2  Metro                   3956
+------------------------------------------------------------
+📊 Aperçu des données dans 'Quartier' :
+   id_quartier         nom                                            geojson
+0            1  Quartier-1  POLYGON((2.4259648127006166 48.806718812700616...
+1            2  Quartier-2  POLYGON((2.272631488792419 48.699307488792414,...
+2            3  Quartier-3  POLYGON((2.2991049923416096 48.79934999234161,...
+3            4  Quartier-4  POLYGON((2.534287421934511 48.91879142193451,2...
+4            5  Quartier-5  POLYGON((2.401594297870999 48.854710297870994,...
+------------------------------------------------------------
+📊 Aperçu des données dans 'Arret' :
+   id_arret      nom   latitude  longitude  id_ligne
+0         1  Arret 1  48.813434   2.125165        49
+1         2  Arret 2  48.798818   2.206456        84
+2         3  Arret 3  48.678233   2.360159         5
+3         4  Arret 4  48.919109   2.331185        43
+4         5  Arret 5  48.974811   2.170697        57
+------------------------------------------------------------
+📊 Aperçu des données dans 'ArretQuartier' :
+   id_arret  id_quartier
+0         1          158
+1         2            1
+2         3          198
+3         4          129
+4         5           38
+------------------------------------------------------------
+📊 Aperçu des données dans 'Chauffeur' :
+   id_chauffeur            nom date_embauche
+0             1    Casey Robin    2047-01-13
+1             2     Luca Petit    2046-04-23
+2             3  Riley Laurent    2047-09-23
+3             4  Zoe Chevalier    2048-10-06
+4             5    Ariel Marin    2048-09-27
+------------------------------------------------------------
+📊 Aperçu des données dans 'Vehicule' :
+   id_vehicule immatriculation  id_ligne  id_chauffeur type_vehicule  capacite
+0            1        PAR-1001        51          2301        Diesel        50
+1            2        PAR-1002        13          1812       Hybride        50
+2            3        PAR-1003        98          1766       Hybride        80
+3            4        PAR-1004        63           221       Hybride        40
+4            5        PAR-1005        62           349    Electrique        50
+------------------------------------------------------------
+📊 Aperçu des données dans 'Horaire' :
+   id_horaire  id_arret  id_vehicule         heure_prevue      heure_effective  passagers_estimes
+0           1      2423           97  2053-12-14 08:26:44  2053-12-14 08:24:44                 29
+1           2      4849          545  2053-03-21 20:28:01  2053-03-21 20:25:01                 43
+2           3      1566          461  2053-01-14 19:01:56  2053-01-14 18:59:56                 40
+3           4      2014         1699  2053-03-07 21:30:35  2053-03-07 21:30:35                 37
+4           5       167          682  2053-01-30 09:55:01  2053-01-30 10:28:01                 25
+------------------------------------------------------------
+📊 Aperçu des données dans 'Capteur' :
+   id_capteur  id_arret type_capteur   latitude  longitude
+0           1         2        Bruit  48.798926   2.206450
+1           2         2        Bruit  48.798362   2.205985
+2           3         3  Temperature  48.678323   2.360428
+3           4         5        Bruit  48.974807   2.170616
+4           5        11          CO2  48.734725   2.526423
+------------------------------------------------------------
+📊 Aperçu des données dans 'Mesure' :
+   id_mesure  id_capteur           horodatage  valeur unite
+0          1           1  2053-10-26 17:06:07   65.19    dB
+1          2           1  2053-02-15 19:50:56   72.25    dB
+2          3           1  2053-08-04 20:24:09   64.40    dB
+3          4           1  2053-01-25 12:58:39   65.73    dB
+4          5           1  2053-12-25 10:27:15   55.05    dB
+------------------------------------------------------------
+📊 Aperçu des données dans 'Trafic' :
+   id_trafic  id_ligne           horodatage  retard_minutes    evenement
+0          1        42  2053-12-12 13:17:37               0       Retard
+1          2        78  2053-12-08 17:41:58               0      Travaux
+2          3        70  2053-06-30 17:51:19               3  Circulation
+3          4        19  2053-05-30 20:07:35               6        Panne
+4          5        88  2053-03-29 07:15:22              11      Travaux
+------------------------------------------------------------
+📊 Aperçu des données dans 'Incident' :
+   id_incident  id_trafic        description  gravite           horodatage
+0            1       6835           Accident        2  2053-08-04 11:31:01
+1            2      21141  Collision mineure        2  2053-10-23 04:25:45
+2            3       5173           Accident        5  2053-07-08 22:48:44
+3            4      11471       Panne moteur        3  2053-11-08 04:05:34
+4            5      11574  Obstacle sur voie        1  2053-04-16 03:19:55
+------------------------------------------------------------
+✅ Exploration terminée.
