@@ -1,5 +1,5 @@
 ============================================================
-📦 Nombre de collections : 4
+📦 Nombre de collections : 5
 ============================================================
 
 1️⃣ **Collection : Lignes**
@@ -90,5 +90,23 @@
            "horodatage": <datetime>
          }
        ]
+     }
+
+5️⃣ **Collection : Quartiers**
+   - Contient les informations sur les quartiers, avec des données géographiques.
+   - Schéma type :
+     {
+       "id_quartier": <int>,
+       "nom": <string>,
+       "nom_officiel": <string>,
+       "code_quartier": <string>,
+       "arrondissement": <int>,
+       "geometry": {
+         "type": "Polygon",
+         "coordinates": [[[<float>, <float>], ...]] // Liste de points pour le polygone
+       },
+       "surface": <float>,
+       "perimetre": <float>,
+       "is_real_paris": <bool>
      }
 ============================================================

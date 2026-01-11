@@ -14,6 +14,8 @@ def load(file):
     path = os.path.join(DATA_DIR, file)
     if os.path.exists(path):
         return pd.read_csv(path)
+    else:
+        print(f"⚠️ Fichier introuvable : {path}")
     return pd.DataFrame()
 
 # --- CONFIGURATION MONGODB ---
@@ -423,11 +425,12 @@ def create_combined_map():
     return m._repr_html_()
 
 # --- CHARGEMENT DES DONNÉES ---
+print("📂 Chargement des fichiers CSV...")
 df_a = load("mongo_requete_a.csv")
 df_b = load("mongo_requete_b.csv")
 df_c = load("mongo_requete_c.csv")
 df_d = load("mongo_requete_d.csv")
-df_e = load("mongo_requete_e.csv") # Contient Top 5 ET Bottom 5
+df_e = load("mongo_requete_e.csv")
 df_f = load("mongo_requete_f.csv")
 df_g = load("mongo_requete_g.csv")
 df_h = load("mongo_requete_h.csv")
@@ -437,6 +440,8 @@ df_k = load("mongo_requete_k.csv")
 df_l = load("mongo_requete_l.csv")
 df_m = load("mongo_requete_m.csv")
 df_n = load("mongo_requete_n.csv")
+
+print(f"✓ Chargement terminé")
 
 
 
@@ -555,6 +560,7 @@ fig_h_quartiers = px.treemap(
     values='arret_count', 
     title="Répartition des Arrêts de Bus par Quartier"
 )
+
 fig_i_corr = px.bar(
     df_i.sort_values("correlation"), 
     x="nom_ligne", 
@@ -665,7 +671,7 @@ app.layout = html.Div([
         ]),
         dcc.Tab(label='📊 Analyses Avancées', children=[
             html.Div([
-                dcc.Graph(figure=fig_h_quartiers),
+                dcc.Graph(figure=fig_h_quartiers),  # Restauré
                 dcc.Graph(figure=fig_i_corr),
             ])
         ]),
