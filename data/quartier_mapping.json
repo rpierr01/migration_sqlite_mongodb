@@ -1,0 +1,482 @@
+{
+  "1": {
+    "nom_synthetique": "Quartier-1",
+    "nom_reel": "Ecole-Militaire",
+    "arrondissement": 7,
+    "index_geojson": 0
+  },
+  "2": {
+    "nom_synthetique": "Quartier-2",
+    "nom_reel": "Salpêtrière",
+    "arrondissement": 13,
+    "index_geojson": 1
+  },
+  "3": {
+    "nom_synthetique": "Quartier-3",
+    "nom_reel": "Petit-Montrouge",
+    "arrondissement": 14,
+    "index_geojson": 2
+  },
+  "4": {
+    "nom_synthetique": "Quartier-4",
+    "nom_reel": "Batignolles",
+    "arrondissement": 17,
+    "index_geojson": 3
+  },
+  "5": {
+    "nom_synthetique": "Quartier-5",
+    "nom_reel": "Arts-et-Métiers",
+    "arrondissement": 3,
+    "index_geojson": 4
+  },
+  "6": {
+    "nom_synthetique": "Quartier-6",
+    "nom_reel": "La Chapelle",
+    "arrondissement": 18,
+    "index_geojson": 5
+  },
+  "7": {
+    "nom_synthetique": "Quartier-7",
+    "nom_reel": "Porte-Saint-Denis",
+    "arrondissement": 10,
+    "index_geojson": 6
+  },
+  "8": {
+    "nom_synthetique": "Quartier-8",
+    "nom_reel": "Bel-Air",
+    "arrondissement": 12,
+    "index_geojson": 7
+  },
+  "9": {
+    "nom_synthetique": "Quartier-9",
+    "nom_reel": "Gare",
+    "arrondissement": 13,
+    "index_geojson": 8
+  },
+  "10": {
+    "nom_synthetique": "Quartier-10",
+    "nom_reel": "Plaine de Monceaux",
+    "arrondissement": 17,
+    "index_geojson": 9
+  },
+  "11": {
+    "nom_synthetique": "Quartier-11",
+    "nom_reel": "Sorbonne",
+    "arrondissement": 5,
+    "index_geojson": 10
+  },
+  "12": {
+    "nom_synthetique": "Quartier-12",
+    "nom_reel": "Invalides",
+    "arrondissement": 7,
+    "index_geojson": 11
+  },
+  "13": {
+    "nom_synthetique": "Quartier-13",
+    "nom_reel": "Bonne-Nouvelle",
+    "arrondissement": 2,
+    "index_geojson": 12
+  },
+  "14": {
+    "nom_synthetique": "Quartier-14",
+    "nom_reel": "Plaisance",
+    "arrondissement": 14,
+    "index_geojson": 13
+  },
+  "15": {
+    "nom_synthetique": "Quartier-15",
+    "nom_reel": "Halles",
+    "arrondissement": 1,
+    "index_geojson": 14
+  },
+  "16": {
+    "nom_synthetique": "Quartier-16",
+    "nom_reel": "Faubourg-Montmartre",
+    "arrondissement": 9,
+    "index_geojson": 15
+  },
+  "17": {
+    "nom_synthetique": "Quartier-17",
+    "nom_reel": "Vivienne",
+    "arrondissement": 2,
+    "index_geojson": 16
+  },
+  "18": {
+    "nom_synthetique": "Quartier-18",
+    "nom_reel": "Archives",
+    "arrondissement": 3,
+    "index_geojson": 17
+  },
+  "19": {
+    "nom_synthetique": "Quartier-19",
+    "nom_reel": "Saint-Victor",
+    "arrondissement": 5,
+    "index_geojson": 18
+  },
+  "20": {
+    "nom_synthetique": "Quartier-20",
+    "nom_reel": "Belleville",
+    "arrondissement": 20,
+    "index_geojson": 19
+  },
+  "21": {
+    "nom_synthetique": "Quartier-21",
+    "nom_reel": "Chaillot",
+    "arrondissement": 16,
+    "index_geojson": 20
+  },
+  "22": {
+    "nom_synthetique": "Quartier-22",
+    "nom_reel": "Enfants-Rouges",
+    "arrondissement": 3,
+    "index_geojson": 21
+  },
+  "23": {
+    "nom_synthetique": "Quartier-23",
+    "nom_reel": "Saint-Fargeau",
+    "arrondissement": 20,
+    "index_geojson": 22
+  },
+  "24": {
+    "nom_synthetique": "Quartier-24",
+    "nom_reel": "Gaillon",
+    "arrondissement": 2,
+    "index_geojson": 23
+  },
+  "25": {
+    "nom_synthetique": "Quartier-25",
+    "nom_reel": "Saint-Ambroise",
+    "arrondissement": 11,
+    "index_geojson": 24
+  },
+  "26": {
+    "nom_synthetique": "Quartier-26",
+    "nom_reel": "Maison-Blanche",
+    "arrondissement": 13,
+    "index_geojson": 25
+  },
+  "27": {
+    "nom_synthetique": "Quartier-27",
+    "nom_reel": "Auteuil",
+    "arrondissement": 16,
+    "index_geojson": 26
+  },
+  "28": {
+    "nom_synthetique": "Quartier-28",
+    "nom_reel": "Notre-Dame-des-Champs",
+    "arrondissement": 6,
+    "index_geojson": 27
+  },
+  "29": {
+    "nom_synthetique": "Quartier-29",
+    "nom_reel": "Faubourg-du-Roule",
+    "arrondissement": 8,
+    "index_geojson": 28
+  },
+  "30": {
+    "nom_synthetique": "Quartier-30",
+    "nom_reel": "Saint-Lambert",
+    "arrondissement": 15,
+    "index_geojson": 29
+  },
+  "31": {
+    "nom_synthetique": "Quartier-31",
+    "nom_reel": "Charonne",
+    "arrondissement": 20,
+    "index_geojson": 30
+  },
+  "32": {
+    "nom_synthetique": "Quartier-32",
+    "nom_reel": "Grandes-Carrières",
+    "arrondissement": 18,
+    "index_geojson": 31
+  },
+  "33": {
+    "nom_synthetique": "Quartier-33",
+    "nom_reel": "Saint-Germain-des-Prés",
+    "arrondissement": 6,
+    "index_geojson": 32
+  },
+  "34": {
+    "nom_synthetique": "Quartier-34",
+    "nom_reel": "Hôpital-Saint-Louis",
+    "arrondissement": 10,
+    "index_geojson": 33
+  },
+  "35": {
+    "nom_synthetique": "Quartier-35",
+    "nom_reel": "Odéon",
+    "arrondissement": 6,
+    "index_geojson": 34
+  },
+  "36": {
+    "nom_synthetique": "Quartier-36",
+    "nom_reel": "Roquette",
+    "arrondissement": 11,
+    "index_geojson": 35
+  },
+  "37": {
+    "nom_synthetique": "Quartier-37",
+    "nom_reel": "Saint-Thomas-d'Aquin",
+    "arrondissement": 7,
+    "index_geojson": 36
+  },
+  "38": {
+    "nom_synthetique": "Quartier-38",
+    "nom_reel": "Champs-Elysées",
+    "arrondissement": 8,
+    "index_geojson": 37
+  },
+  "39": {
+    "nom_synthetique": "Quartier-39",
+    "nom_reel": "Saint-Georges",
+    "arrondissement": 9,
+    "index_geojson": 38
+  },
+  "40": {
+    "nom_synthetique": "Quartier-40",
+    "nom_reel": "Chaussée-d'Antin",
+    "arrondissement": 9,
+    "index_geojson": 39
+  },
+  "41": {
+    "nom_synthetique": "Quartier-41",
+    "nom_reel": "Arsenal",
+    "arrondissement": 4,
+    "index_geojson": 40
+  },
+  "42": {
+    "nom_synthetique": "Quartier-42",
+    "nom_reel": "Saint-Germain-l'Auxerrois",
+    "arrondissement": 1,
+    "index_geojson": 41
+  },
+  "43": {
+    "nom_synthetique": "Quartier-43",
+    "nom_reel": "Monnaie",
+    "arrondissement": 6,
+    "index_geojson": 42
+  },
+  "44": {
+    "nom_synthetique": "Quartier-44",
+    "nom_reel": "Madeleine",
+    "arrondissement": 8,
+    "index_geojson": 43
+  },
+  "45": {
+    "nom_synthetique": "Quartier-45",
+    "nom_reel": "Sainte-Marguerite",
+    "arrondissement": 11,
+    "index_geojson": 44
+  },
+  "46": {
+    "nom_synthetique": "Quartier-46",
+    "nom_reel": "Saint-Gervais",
+    "arrondissement": 4,
+    "index_geojson": 45
+  },
+  "47": {
+    "nom_synthetique": "Quartier-47",
+    "nom_reel": "Javel",
+    "arrondissement": 15,
+    "index_geojson": 46
+  },
+  "48": {
+    "nom_synthetique": "Quartier-48",
+    "nom_reel": "Porte-Dauphine",
+    "arrondissement": 16,
+    "index_geojson": 47
+  },
+  "49": {
+    "nom_synthetique": "Quartier-49",
+    "nom_reel": "Villette",
+    "arrondissement": 19,
+    "index_geojson": 48
+  },
+  "50": {
+    "nom_synthetique": "Quartier-50",
+    "nom_reel": "Picpus",
+    "arrondissement": 12,
+    "index_geojson": 49
+  },
+  "51": {
+    "nom_synthetique": "Quartier-51",
+    "nom_reel": "Porte-Saint-Martin",
+    "arrondissement": 10,
+    "index_geojson": 50
+  },
+  "52": {
+    "nom_synthetique": "Quartier-52",
+    "nom_reel": "Sainte-Avoie",
+    "arrondissement": 3,
+    "index_geojson": 51
+  },
+  "53": {
+    "nom_synthetique": "Quartier-53",
+    "nom_reel": "Clignancourt",
+    "arrondissement": 18,
+    "index_geojson": 52
+  },
+  "54": {
+    "nom_synthetique": "Quartier-54",
+    "nom_reel": "Goutte-d'Or",
+    "arrondissement": 18,
+    "index_geojson": 53
+  },
+  "55": {
+    "nom_synthetique": "Quartier-55",
+    "nom_reel": "Val-de-Grace",
+    "arrondissement": 5,
+    "index_geojson": 54
+  },
+  "56": {
+    "nom_synthetique": "Quartier-56",
+    "nom_reel": "Bercy",
+    "arrondissement": 12,
+    "index_geojson": 55
+  },
+  "57": {
+    "nom_synthetique": "Quartier-57",
+    "nom_reel": "Mail",
+    "arrondissement": 2,
+    "index_geojson": 56
+  },
+  "58": {
+    "nom_synthetique": "Quartier-58",
+    "nom_reel": "Saint-Merri",
+    "arrondissement": 4,
+    "index_geojson": 57
+  },
+  "59": {
+    "nom_synthetique": "Quartier-59",
+    "nom_reel": "Père-Lachaise",
+    "arrondissement": 20,
+    "index_geojson": 58
+  },
+  "60": {
+    "nom_synthetique": "Quartier-60",
+    "nom_reel": "Montparnasse",
+    "arrondissement": 14,
+    "index_geojson": 59
+  },
+  "61": {
+    "nom_synthetique": "Quartier-61",
+    "nom_reel": "Ternes",
+    "arrondissement": 17,
+    "index_geojson": 60
+  },
+  "62": {
+    "nom_synthetique": "Quartier-62",
+    "nom_reel": "Amérique",
+    "arrondissement": 19,
+    "index_geojson": 61
+  },
+  "63": {
+    "nom_synthetique": "Quartier-63",
+    "nom_reel": "Rochechouart",
+    "arrondissement": 9,
+    "index_geojson": 62
+  },
+  "64": {
+    "nom_synthetique": "Quartier-64",
+    "nom_reel": "Palais-Royal",
+    "arrondissement": 1,
+    "index_geojson": 63
+  },
+  "65": {
+    "nom_synthetique": "Quartier-65",
+    "nom_reel": "Saint-Vincent-de-Paul",
+    "arrondissement": 10,
+    "index_geojson": 64
+  },
+  "66": {
+    "nom_synthetique": "Quartier-66",
+    "nom_reel": "Croulebarbe",
+    "arrondissement": 13,
+    "index_geojson": 65
+  },
+  "67": {
+    "nom_synthetique": "Quartier-67",
+    "nom_reel": "Jardin-des-Plantes",
+    "arrondissement": 5,
+    "index_geojson": 66
+  },
+  "68": {
+    "nom_synthetique": "Quartier-68",
+    "nom_reel": "Epinettes",
+    "arrondissement": 17,
+    "index_geojson": 67
+  },
+  "69": {
+    "nom_synthetique": "Quartier-69",
+    "nom_reel": "Pont-de-Flandre",
+    "arrondissement": 19,
+    "index_geojson": 68
+  },
+  "70": {
+    "nom_synthetique": "Quartier-70",
+    "nom_reel": "Europe",
+    "arrondissement": 8,
+    "index_geojson": 69
+  },
+  "71": {
+    "nom_synthetique": "Quartier-71",
+    "nom_reel": "Quinze-Vingts",
+    "arrondissement": 12,
+    "index_geojson": 70
+  },
+  "72": {
+    "nom_synthetique": "Quartier-72",
+    "nom_reel": "Parc-de-Montsouris",
+    "arrondissement": 14,
+    "index_geojson": 71
+  },
+  "73": {
+    "nom_synthetique": "Quartier-73",
+    "nom_reel": "Notre-Dame",
+    "arrondissement": 4,
+    "index_geojson": 72
+  },
+  "74": {
+    "nom_synthetique": "Quartier-74",
+    "nom_reel": "Combat",
+    "arrondissement": 19,
+    "index_geojson": 73
+  },
+  "75": {
+    "nom_synthetique": "Quartier-75",
+    "nom_reel": "Muette",
+    "arrondissement": 16,
+    "index_geojson": 74
+  },
+  "76": {
+    "nom_synthetique": "Quartier-76",
+    "nom_reel": "Gros-Caillou",
+    "arrondissement": 7,
+    "index_geojson": 75
+  },
+  "77": {
+    "nom_synthetique": "Quartier-77",
+    "nom_reel": "Folie-Méricourt",
+    "arrondissement": 11,
+    "index_geojson": 76
+  },
+  "78": {
+    "nom_synthetique": "Quartier-78",
+    "nom_reel": "Necker",
+    "arrondissement": 15,
+    "index_geojson": 77
+  },
+  "79": {
+    "nom_synthetique": "Quartier-79",
+    "nom_reel": "Grenelle",
+    "arrondissement": 15,
+    "index_geojson": 78
+  },
+  "80": {
+    "nom_synthetique": "Quartier-80",
+    "nom_reel": "Place-Vendôme",
+    "arrondissement": 1,
+    "index_geojson": 79
+  }
+}

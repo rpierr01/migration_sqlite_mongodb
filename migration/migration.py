@@ -35,6 +35,7 @@ db.Lignes.drop()
 db.Arrets.drop()
 db.Vehicules.drop()
 db.Trafic.drop()
+db.Quartiers.drop()  # Nouvelle collection
 
 # --- CHARGEMENT ET PRÉ-TRAITEMENT DES DONNÉES ---
 print("Chargement et pré-traitement des DataFrames...")
@@ -92,7 +93,7 @@ print("Pré-traitement terminé.")
 # --- COMPTEURS ---
 total_stats = {
     "lignes": 0, "arrets": 0, "vehicules": 0, 
-    "trafic": 0, "mesures": 0, "incidents": 0
+    "trafic": 0, "mesures": 0, "incidents": 0, "quartiers": 0
 }
 
 # Insert helper to process collections in chunks to reduce memory and driver overhead
@@ -108,6 +109,103 @@ docs_lignes = lignes.to_dict(orient="records")
 if docs_lignes:
     db.Lignes.insert_many(docs_lignes)
     total_stats["lignes"] = len(docs_lignes)
+
+# =============================================================================
+# COLLECTION 1.5 : QUARTIERS (avec GeoJSON RÉEL de Paris)
+# =============================================================================
+print("\nMigration QUARTIERS (avec GeoJSON réel de Paris)...")
+docs_quartiers = []
+
+# Charger le fichier GeoJSON réel
+import json
+geojson_path = "data/paris_quartiers_real.geojson"
+
+try:
+    with open(geojson_path, 'r', encoding='utf-8') as f:
+        paris_geojson = json.load(f)
+    
+    print(f"✓ Fichier GeoJSON chargé : {len(paris_geojson['features'])} quartiers réels trouvés")
+    
+    # Créer un mapping entre les quartiers synthétiques et réels
+    # On va mapper par proximité de nom ou utiliser un index
+    quartiers_sqlite = pd.read_sql_query("SELECT id_quartier, nom FROM Quartier", conn)
+    
+    # Pour chaque quartier réel de Paris
+    for idx, feature in enumerate(paris_geojson['features']):
+        props = feature['properties']
+        
+        # Utiliser l'index comme id_quartier (ou mapper par nom si possible)
+        # Ajuster selon votre logique métier
+        id_quartier_mapping = idx + 1  # Commence à 1
+        
+        # Si vous voulez mapper par nom (correspondance approximative)
+        nom_quartier_reel = props.get('l_qu', f'Quartier-{idx+1}')
+        
+        docs_quartiers.append({
+            "id_quartier": int(id_quartier_mapping),
+            "nom": nom_quartier_reel,
+            "nom_officiel": nom_quartier_reel,
+            "code_quartier": props.get('c_qu', ''),
+            "arrondissement": props.get('c_ar', 0),
+            "geometry": feature['geometry'],
+            "surface": props.get('surface', 0),
+            "perimetre": props.get('perimetre', 0),
+            "is_real_paris": True
+        })
+    
+    print(f"✓ {len(docs_quartiers)} quartiers réels préparés pour insertion")
+    
+except FileNotFoundError:
+    print(f"⚠️ Fichier {geojson_path} non trouvé. Utilisation du fallback SQLite...")
+    # Fallback vers l'ancienne méthode si le fichier n'existe pas
+    for _, row in tqdm(quartiers.iterrows(), total=len(quartiers), desc="Quartiers"):
+        geom_str = row['geojson']
+        
+        try:
+            if geom_str.startswith('POLYGON'):
+                if geom_str.startswith('MULTIPOLYGON'):
+                    coords_str = geom_str.replace('MULTIPOLYGON(((', '').replace(')))', '')
+                else:
+                    coords_str = geom_str.replace('POLYGON((', '').replace('))', '')
+                
+                points = coords_str.split(',')
+                coordinates = []
+                
+                for point in points:
+                    point = point.strip()
+                    if ' ' in point:
+                        parts = point.split()
+                        lon = float(parts[0])
+                        lat = float(parts[1])
+                        coordinates.append([lon, lat])
+                
+                if coordinates[0] != coordinates[-1]:
+                    coordinates.append(coordinates[0])
+                
+                geometry = {
+                    "type": "Polygon",
+                    "coordinates": [coordinates]
+                }
+            else:
+                import json
+                geometry = json.loads(geom_str)
+            
+            docs_quartiers.append({
+                "id_quartier": int(row['id_quartier']),
+                "nom": row['nom'],
+                "geometry": geometry,
+                "is_real_paris": False
+            })
+            
+        except Exception as e:
+            print(f"Erreur parsing quartier {row['id_quartier']}: {e}")
+            continue
+
+if docs_quartiers:
+    db.Quartiers.insert_many(docs_quartiers)
+    total_stats["quartiers"] = len(docs_quartiers)
+    real_count = sum(1 for q in docs_quartiers if q.get('is_real_paris', False))
+    print(f"📊 Quartiers réels de Paris : {real_count}/{len(docs_quartiers)}")
 
 # =============================================================================
 # COLLECTION 2 : ARRETS (Complexe : GeoJSON + Imbrications)
@@ -208,6 +306,8 @@ if docs_trafic:
 # --- INDEXATION ---
 print("\nCréation des index (dont Géospatial)...")
 db.Arrets.create_index([("location", GEOSPHERE)])
+db.Quartiers.create_index([("geometry", GEOSPHERE)])  # Index géospatial pour les quartiers
+db.Quartiers.create_index("id_quartier")
 db.Lignes.create_index("id_ligne")
 db.Arrets.create_index("id_ligne")
 db.Arrets.create_index("quartiers.id_quartier")
@@ -220,6 +320,7 @@ print("\n" + "="*60)
 print("MIGRATION TERMINÉE AVEC SUCCÈS")
 print("="*60)
 print(f"Lignes      : {total_stats['lignes']}")
+print(f"Quartiers   : {total_stats['quartiers']} (Index GeoSphere activé)")
 print(f"Arrêts      : {total_stats['arrets']} (Index GeoSphere activé)")
 print(f"Véhicules   : {total_stats['vehicules']}")
 print(f"Trafic      : {total_stats['trafic']}")
