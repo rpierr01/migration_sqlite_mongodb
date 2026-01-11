@@ -4,6 +4,7 @@
 
 - Travail collaboratif sur GitHub.
 - Taux d'utilisation de l'IA estimé à **70%**.
+- Nous avons décidé de travailler avec Dash car c'est un framework que nous trouvons parfaitement adapté bien que cet outil ne sit pas explicitement proposé sur le sujet.
 
 ### Membres de l'équipe
 
@@ -47,3 +48,9 @@ Le programme `run_all.py` permet de lancer le logiciel Dash dans son intégralit
 
 - **Problème** : Si les fichiers d'export CSV sont supprimés et que les programmes de migration et de requêtes sont lancés depuis l'interface Dash (`run_all.py`), la partie "tableau de bord" ne charge pas.
 - **Solution temporaire** : Relancer le logiciel.
+
+---
+
+## Piste d'amélioration
+
+- **Prediction de flux de passagers** : Nous avons pensé à intégrer un programme d'apprentissage supervisé pour prédire les flux de passagers durant 2055. 

@@ -554,12 +554,6 @@ fig_l_elec = px.bar(
     y="taux_electrique", 
     title="Taux de Véhicules Électriques par Ligne"
 )
-fig_h_quartiers = px.treemap(
-    df_h, 
-    path=['quartier_nom'], 
-    values='arret_count', 
-    title="Répartition des Arrêts de Bus par Quartier"
-)
 
 fig_i_corr = px.bar(
     df_i.sort_values("correlation"), 
@@ -671,7 +665,6 @@ app.layout = html.Div([
         ]),
         dcc.Tab(label='📊 Analyses Avancées', children=[
             html.Div([
-                dcc.Graph(figure=fig_h_quartiers),  # Restauré
                 dcc.Graph(figure=fig_i_corr),
             ])
         ]),
