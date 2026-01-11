@@ -1,0 +1,94 @@
+============================================================
+📦 Nombre de collections : 4
+============================================================
+
+1️⃣ **Collection : Lignes**
+   - Contient les informations sur les lignes de transport.
+   - Schéma type :
+     {
+       "id_ligne": <int>,
+       "nom_ligne": <string>,
+       "type": <string>,
+       "frequentation_moyenne": <int>
+     }
+
+2️⃣ **Collection : Arrets**
+   - Contient les informations sur les arrêts, avec des données imbriquées.
+   - Schéma type :
+     {
+       "id_arret": <int>,
+       "nom": <string>,
+       "id_ligne": <int>,
+       "location": {
+         "type": "Point",
+         "coordinates": [<float>, <float>] // [longitude, latitude]
+       },
+       "latitude": <float>,
+       "longitude": <float>,
+       "quartiers": [
+         {
+           "id_quartier": <int>,
+           "nom": <string>
+         }
+       ],
+       "capteurs": [
+         {
+           "id_capteur": <int>,
+           "type_capteur": <string>,
+           "location": {
+             "type": "Point",
+             "coordinates": [<float>, <float>]
+           },
+           "mesures": [
+             {
+               "horodatage": <datetime>,
+               "valeur": <float>,
+               "unite": <string>
+             }
+           ]
+         }
+       ],
+       "horaires": [
+         {
+           "id_vehicule": <int>,
+           "heure_prevue": <datetime>,
+           "heure_effective": <datetime>,
+           "passagers_estimes": <int>
+         }
+       ]
+     }
+
+3️⃣ **Collection : Vehicules**
+   - Contient les informations sur les véhicules et leurs chauffeurs.
+   - Schéma type :
+     {
+       "id_vehicule": <int>,
+       "immatriculation": <string>,
+       "id_ligne": <int>,
+       "type_vehicule": <string>,
+       "capacite": <int>,
+       "chauffeur": {
+         "id_chauffeur": <int>,
+         "nom": <string>,
+         "date_embauche": <datetime>
+       }
+     }
+
+4️⃣ **Collection : Trafic**
+   - Contient les informations sur le trafic, avec des incidents imbriqués.
+   - Schéma type :
+     {
+       "id_trafic": <int>,
+       "id_ligne": <int>,
+       "horodatage": <datetime>,
+       "retard_minutes": <int>,
+       "evenement": <string>,
+       "incidents": [
+         {
+           "description": <string>,
+           "gravite": <int>,
+           "horodatage": <datetime>
+         }
+       ]
+     }
+============================================================
